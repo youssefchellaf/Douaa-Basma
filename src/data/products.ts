@@ -1,0 +1,219 @@
+import { Product, Category, Testimonial, Coupon } from '../types';
+
+export const CATEGORIES: Category[] = [
+  {
+    id: 'all',
+    name: 'الكل',
+    description: 'جميع المشروبات والتحليات الفاخرة',
+    icon: 'Sparkles',
+  },
+  {
+    id: 'juices',
+    name: 'عصائر طبيعية',
+    description: 'عصائر طازجة محضرة بأجود أنواع الفواكه الطبيعية',
+    icon: 'Milk',
+  },
+  {
+    id: 'desserts',
+    name: 'تحليات منزلية',
+    description: 'فلانات وحلويات منزلية فاخرة بنكهات أصيلة',
+    icon: 'Dessert',
+  },
+  {
+    id: 'specials',
+    name: 'عروض خاصة',
+    description: 'مزيج فريد من النكهات لتجربة ملكية لا تنسى',
+    icon: 'Flame',
+  },
+];
+
+export const PRODUCTS: Product[] = [
+  {
+    id: 1,
+    name: "Zaza Royal",
+    arabicName: "زعزع الملكي الفاخر",
+    description: "مزيج غني ولذيذ من الأفوكادو الطازج، فلان الكراميل البيتي، قطع الموز، واللوز المحمص المقرمش مع لمسة تزيين فاخرة.",
+    price: 25,
+    image: "/src/assets/images/product_zaza_1779343709922.png",
+    category: "specials",
+    rating: 4.9,
+    isFeatured: true,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["أفوكادو طازج", "موز غني", "فلان كراميل منزلي", "لوز محمص مقرمش", "حليب كامل الدسم", "مكسرات وفواكه جافة للتزيين"]
+  },
+  {
+    id: 2,
+    name: "Creamy Avocado Shake",
+    arabicName: "عصير الأفوكادو الملكي",
+    description: "أفوكادو مخفوق بعناية حتى الحصول على قوام كريمي ناعم، غني بالمكسرات والعسل الطبيعي لمذاق ونشاط مثالي.",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&q=80&w=600",
+    category: "juices",
+    rating: 4.8,
+    isFeatured: true,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["أفوكادو ممتاز", "حليب طازج", "عسل حر طبيعي", "لوز مطحون"]
+  },
+  {
+    id: 3,
+    name: "Golden Mango Nectar",
+    arabicName: "عصير المانجو",
+    description: "عصير مانجو استوائي نقي 100% غني بالألياف والفوائد، بنكهة غنية ومنعشة ومحضرة مباشرة عند الطلب.",
+    price: 25,
+    image: "/src/assets/images/product_mango_uploaded_1779885224824.png",
+    category: "juices",
+    rating: 4.7,
+    isFeatured: true,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["أفخر أنواع المانجو", "قطع ثلج خفيفة", "لمسة نعناع طازج"]
+  },
+  {
+    id: 4,
+    name: "Banana & Apple Fusion",
+    arabicName: "عصير الموز والتفاح اللطيف",
+    description: "مزيج متناغم ورائع من الموز الحلو الغني بالبوتاسيوم والتفاح الطازج، مخفوق بحليب خفيف لمذاق متوازن ومغذي.",
+    price: 20,
+    image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&q=80&w=600",
+    category: "juices",
+    rating: 4.5,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["موز ناضج حُلو", "تفاح طازج مقشر", "حليب بارد", "قرفة مطحونة اختيارية"]
+  },
+  {
+    id: 5,
+    name: "Mystic Dragon Fruit Juice",
+    arabicName: "عصير دراغون المخملي",
+    description: "عصير فريد من ثمرة الفاكهة التنينية الوردية المنعشة، لمظهر جذاب خلّاب ومذاق استثنائي يجمع بين الحلاوة والانتعاش العظيم.",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&q=80&w=600",
+    category: "juices",
+    rating: 4.9,
+    isFeatured: true,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["ثمرة التنين (Dragon Fruit) حمراء", "مستخلص الليمون الحامض", "ماء جوز الهند لمنعش ممتع"]
+  },
+  {
+    id: 6,
+    name: "Classic Panache Juices",
+    arabicName: "عصير البناشي الأصيل",
+    description: "الكوكتيل المغربي الكلاسيكي الشهير، توليفة ممتازة وغنية من الفواكه الموسمية المختلطة والحليب، طاقة وحيوية في كل رشفة.",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&q=80&w=600",
+    category: "juices",
+    rating: 4.6,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["موز، تفاح، خوخ، مكسرات متكاملة", "برتقال ناعم", "حليب طازج"]
+  },
+  {
+    id: 7,
+    name: "Fresh Orange Sunshine",
+    arabicName: "عصير البرتقال الطبيعي المنعش",
+    description: "عصير برتقال طبيعي مصفي 100% معصور يدوياً وبكل عناية من أجود مزارع الموالح، غني بفيتامين C ومنعش بامتياز.",
+    price: 20,
+    image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&q=80&w=600",
+    category: "juices",
+    rating: 4.8,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["برتقال مغربي طازج 100%", "بدون مياه مضافة", "بدون سكر مضاف"]
+  },
+  {
+    id: 8,
+    name: "Pear & Pineapple Delight",
+    arabicName: "عصير الإجاص والأناناس المتميز",
+    description: "اندماج فريد ومنعش يجمع بين رقة الإجاص وحلاوة الأناناس الاستوائي، يعطيك شعوراً لا يوصف بالانتعاش الفوري.",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1624462966581-bc6d768cbce5?auto=format&fit=crop&q=80&w=600",
+    category: "juices",
+    rating: 4.6,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["إجاص طري", "أناناس ناضج غني بالشراب", "رشة بنكهة الزنجبيل الطازج"]
+  },
+  {
+    id: 9,
+    name: "Caramel Flan with Almonds",
+    arabicName: "فلان كراميل باللوز الفاخر (تورون)",
+    description: "تحلية مغربية أندلسية كلاسيكية محبوبة، محضر من حليب وقشدة بيضاء طازجة ومزين بطبقة غنية من التورون ورقائق اللوز المقرمشة.",
+    price: 15,
+    image: "/src/assets/images/product_flan_1779343731407.png",
+    category: "desserts",
+    rating: 4.8,
+    isFeatured: true,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["حليب مكثف", "قشدة طازجة", "عسل وكراميل ذهبي محروق برقة", "رقائق اللوز والتورون الأندلسي الفاخر"]
+  },
+  {
+    id: 10,
+    name: "Venezuelan Special Flan",
+    arabicName: "الفلان الفنزويلي المخملي",
+    description: "فلان مخبوز ببطء غني بمستخلص الفانيليا وقشر الليمون الخفيف، ناعم جداً وبطعم مكثف يذوب في الفم بسعادة.",
+    price: 12,
+    image: "https://images.unsplash.com/photo-1528975604071-b4dc52a2d18c?auto=format&fit=crop&q=80&w=600",
+    category: "desserts",
+    rating: 4.7,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["بيض طازج", "حليب مكثف ومبخر", "فانيليا مدغشقرية طبيعية", "كراميل سائل"]
+  }
+];
+
+export const TESTIMONIALS: Testimonial[] = [
+  {
+    id: 1,
+    name: "فاطمة الزهراء الإدريسي",
+    city: "الرباط",
+    rating: 5,
+    comment: "أفخر زعزع قد تذوقته في حياتي! ليس مجرد مشروب بل لوحة فنية شهية، الفلان في داخله طعمه رهيب والتقديم غاية في الأناقة والاستقبال الرائع. تبارك الله عليكما دعاء وبسمة",
+    date: "منذ يومين"
+  },
+  {
+    id: 2,
+    name: "أمين الودغيري",
+    city: "الدار البيضاء",
+    rating: 5,
+    comment: "المذاق حقيقي جداً وطبيعي تظهر جودة الفواكه الطازجة غير المفرزة مستواهم راقي جداً والتوصيل سريع وبطريقة تحفظ البرودة. فخور بدعم هذا المشروع الفاخر والمواظبة على الطلب منه.",
+    date: "منذ أسبوع"
+  },
+  {
+    id: 3,
+    name: "أمينة العلوي",
+    city: "فاس الفخامة",
+    rating: 5,
+    comment: "الفلان كراميل باللوز (التورون) أعادني لذكريات الأندلس الرائعة، تناغم السكر المعتدل مع دسامة الكريمة لا يقاوم. أنصح الجميع بتجربة منتجات Douaa & Basma.",
+    date: "منذ 3 أيام"
+  }
+];
+
+export const APP_COUPONS: Coupon[] = [
+  { code: "RAMADAN2026", discountPercent: 15, active: true },
+  { code: "DB2026", discountPercent: 10, active: true, minOrder: 50 },
+  { code: "FREEPASS", discountPercent: 100, active: false } // Admin testing
+];
+
+export const DELIVERY_ZONES = [
+  // 5 DH places
+  { id: "baisa", name: "حي بايصة", cost: 5, description: "حي بايصة (توصيل سريع بـ 5 دراهم)" },
+  { id: "amira", name: "حي الاميرة", cost: 5, description: "حي الاميرة (توصيل سريع بـ 5 دراهم)" },
+  { id: "ras_louta", name: "حي رأس لوطا", cost: 5, description: "حي رأس لوطا (توصيل سريع بـ 5 دراهم)" },
+  { id: "kandissa", name: "حي كنديسة", cost: 5, description: "حي كنديسة (توصيل سريع بـ 5 دراهم)" },
+  { id: "aghattas", name: "حي أغطاس", cost: 5, description: "حي أغطاس (توصيل سريع بـ 5 دراهم)" },
+  { id: "sidi_boughaba", name: "حي سيدي بوغابة", cost: 5, description: "حي سيدي بوغابة (توصيل سريع بـ 5 دراهم)" },
+  { id: "sabila", name: "حي سبيلة", cost: 5, description: "حي سبيلة (توصيل سريع بـ 5 دراهم)" },
+  { id: "shabar", name: "حي الشبار", cost: 5, description: "حي الشبار (توصيل سريع بـ 5 دراهم)" },
+  { id: "merja", name: "حي المرجة", cost: 5, description: "حي المرجة (توصيل سريع بـ 5 دراهم)" },
+  { id: "ceramica", name: "حي سيراميكا", cost: 5, description: "حي سيراميكا (توصيل سريع بـ 5 دراهم)" },
+  { id: "patio", name: "حي الباطيو", cost: 5, description: "حي الباطيو (توصيل سريع بـ 5 دراهم)" },
+  { id: "buosito", name: "حي بوسيطو", cost: 5, description: "حي بوسيطو (توصيل سريع بـ 5 دراهم)" },
+  { id: "fawqiya", name: "حومة الفوقية", cost: 5, description: "حومة الفوقية (توصيل سريع بـ 5 دراهم)" },
+  { id: "bahr", name: "حومة د بحر", cost: 5, description: "حومة د بحر (توصيل سريع بـ 5 دراهم)" },
+  { id: "wad", name: "حومة د الواد", cost: 5, description: "حومة د الواد (توصيل سريع بـ 5 دراهم)" },
+
+  // 10 DH places
+  { id: "bendiban", name: "حي بنديبان", cost: 10, description: "حي بنديبان (توصيل سريع بـ 10 دراهم)" },
+  { id: "bararek", name: "حي برارك", cost: 10, description: "حي برارك (توصيل سريع بـ 10 دراهم)" },
+  { id: "haydra", name: "حيضرة", cost: 10, description: "حيضرة (توصيل سريع بـ 10 دراهم)" },
+  { id: "riffien", name: "ريفيين", cost: 10, description: "ريفيين (توصيل سريع بـ 10 دراهم)" },
+  { id: "dawiat", name: "واد داويات", cost: 10, description: "واد داويات (توصيل سريع بـ 10 دراهم)" },
+  { id: "mamzla", name: "ممزلة", cost: 10, description: "ممزلة (توصيل سريع بـ 10 دراهم)" },
+
+  // Negotiated places
+  { id: "remote", name: "الأماكن الأكثر بعداً (التفاهم حسب العنوان)", cost: 0, description: "المناطق والمدن الأكثر بعداً سيتم التواصل معك والاتفاق على تكلفة التوصيل وموقعه بالتحديد عبر الواتساب" }
+];

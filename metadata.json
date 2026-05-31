@@ -1,0 +1,6 @@
+{
+  "name": "Douaa & Basma",
+  "description": "متجر إلكتروني فاخر لعصائر وتحليات منزلية طازجة ومحضرة بعناية فائقة وتوصيل سريع.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

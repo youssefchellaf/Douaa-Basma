@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "Tajawal", system-ui, -apple-system, sans-serif;
+  --font-display: "Tajawal", "Cairo", sans-serif;
+  
+  --color-royal-purple: #3b0764;
+  --color-brand-purple: #581c87;
+  --color-brand-purple-light: #8b5cf6;
+  --color-brand-purple-soft: #f3e8ff;
+  --color-brand-gold: #c2993b;
+  --color-brand-gold-dark: #a17c2f;
+  --color-brand-gold-light: #d4af37;
+  --color-brand-gold-soft: #fefbeb;
+  --color-brand-beige: #faf7f2;
+  --color-brand-cream: #fbfbf9;
+  --color-brand-green: #15803d;
+  --color-brand-green-light: #bbf7d0;
+  
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-spin-slow: spin-slow 20s linear infinite;
+  --animate-pulse-slow: pulse-slow 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Custom gorgeous arabesque background overlays */
+.arabesque-pattern {
+  background-image: radial-gradient(circle at 1px 1px, #c2993b1a 1.5px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(194, 153, 59, 0.15);
+}
+
+.glass-panel-dark {
+  background: rgba(59, 7, 100, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(194, 153, 59, 0.25);
+}
+
+/* Custom scrollbar to match the royal theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #fbfbf9;
+}
+::-webkit-scrollbar-thumb {
+  background: #c2993b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #581c87;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-brand-cream);
+  color: #1f2937;
+  direction: rtl;
+}
+
+/* RTL Helpers since browser might default to normal dir */
+.text-align-start {
+  text-align: right;
+}

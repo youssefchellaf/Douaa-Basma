@@ -44,6 +44,16 @@ export const Checkout: React.FC<CheckoutProps> = ({
   const [couponSuccess, setCouponSuccess] = useState('');
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  const clearError = (field: string) => {
+    if (formErrors[field]) {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   const FREE_DELIVERY_THRESHOLD = 100;
   const isFreeDelivery = subtotal >= FREE_DELIVERY_THRESHOLD;
   const actualDeliveryCost = isFreeDelivery ? 0 : deliveryCost;
@@ -99,24 +109,55 @@ export const Checkout: React.FC<CheckoutProps> = ({
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
-    if (!fullName.trim()) errors.fullName = 'الاسم الكامل مطلوب لتأكيد الهوية البريدية';
+    if (!fullName.trim()) {
+      errors.fullName = 'الاسم الكامل مطلوب لتأكيد الهوية البريدية';
+    }
     
-    // Simple Moroccan phone format assertion (e.g. 06 / 07 followed by 8 numbers)
-    const phoneNo = phone.trim();
-    if (!phoneNo) {
-      errors.phone = 'رقم الهاتف مطلوب لتوصيل مباشر';
-    } else if (!/^(05|06|07)[0-9]{8}$/.test(phoneNo) && !/^\+212[0-9]{9}$/.test(phoneNo)) {
-      errors.phone = 'يرجى إدخال رقم هاتف مغربي صحيح (مثال: 0612345678)';
+    // Normalize and clean Moroccan phone number formatting (tolerant of spaces, dots, dashes, +212 / 00212 prefixes)
+    let cleanPhone = phone.trim().replace(/[\s\-\(\)\.\+]/g, '');
+    
+    if (!phone.trim()) {
+      errors.phone = 'رقم الهاتف مطلوب لتسهيل عملية التوصيل والاستلام لطلبيتكم';
+    } else {
+      if (cleanPhone.startsWith('00212')) {
+        cleanPhone = cleanPhone.substring(5);
+      } else if (cleanPhone.startsWith('212')) {
+        cleanPhone = cleanPhone.substring(3);
+      } else if (cleanPhone.startsWith('0')) {
+        cleanPhone = cleanPhone.substring(1);
+      }
+      
+      // core mobile and landline digit pattern check: 9 digits starting with 5, 6, or 7
+      if (!/^[567][0-9]{8}$/.test(cleanPhone)) {
+        errors.phone = 'المرجو إدخال رقم هاتف مغربي صحيح ومكون من 10 أرقام (مثال: 0612345678)';
+      }
     }
 
-    if (!address.trim()) errors.address = 'تفاصيل العنوان مطلوبة لضمان وصول المندوب ببرودة';
+    if (!selectedZone) {
+      errors.deliveryArea = 'الرجاء اختيار منطقة التوصيل لتأكيد الطلب';
+    }
 
     setFormErrors(errors);
-    return Object.keys(errors).length === 0;
+
+    if (Object.keys(errors).length > 0) {
+      // Smoothly scroll to the first invalid field so the user is guided automatically
+      setTimeout(() => {
+        const firstErrorKey = Object.keys(errors)[0];
+        const element = document.getElementById(`field-${firstErrorKey}`) || document.getElementById(`checkout-form`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+      return false;
+    }
+
+    return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: { preventDefault: () => void }) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!validateForm()) return;
 
     onPlaceOrder({
@@ -138,7 +179,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
           className="flex items-center gap-2 text-sm font-bold text-brand-purple hover:text-brand-purple-light cursor-pointer transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>الرجوع والتعديل على سلة المشتريات</span>
+          <span>الرجوع والتعديل على طلباتي</span>
         </button>
       </div>
 
@@ -151,17 +192,29 @@ export const Checkout: React.FC<CheckoutProps> = ({
             معلومات التوصيل والاستلام
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {Object.keys(formErrors).length > 0 && (
+            <div className="p-4 mb-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />
+              <span>المرجو ملء جميع الحقول المطلوبة بشكل صحيح أعلاه لإتمام الطلبية.</span>
+            </div>
+          )}
+
+          <form id="checkout-form" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }} className="space-y-4">
             
             {/* Full Name */}
-            <div>
+            <div id="field-fullName">
               <label className="text-sm font-bold text-gray-700 block mb-1.5 focus:text-brand-purple">
                 الاسم الكامل <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  clearError('fullName');
+                }}
+                onFocus={() => clearError('fullName')}
+                onClick={() => clearError('fullName')}
                 placeholder="مثال: ليلى الودغيري"
                 className={`w-full p-3.5 rounded-2xl border ${formErrors.fullName ? 'border-red-400 focus:border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-brand-purple'} outline-none text-sm transition-colors bg-brand-cream/40`}
               />
@@ -174,14 +227,19 @@ export const Checkout: React.FC<CheckoutProps> = ({
             </div>
 
             {/* Phone Number */}
-            <div>
+            <div id="field-phone">
               <label className="text-sm font-bold text-gray-700 block mb-1.5">
                 رقم الهاتف (واتساب مفضل للتنسيق) <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  clearError('phone');
+                }}
+                onFocus={() => clearError('phone')}
+                onClick={() => clearError('phone')}
                 placeholder="مثال: 0612345678"
                 className={`w-full p-3.5 rounded-2xl border ${formErrors.phone ? 'border-red-400 focus:border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-brand-purple'} outline-none text-sm transition-colors bg-brand-cream/40 text-right`}
               />
@@ -194,17 +252,30 @@ export const Checkout: React.FC<CheckoutProps> = ({
             </div>
 
             {/* Delivery Zone dropdown */}
-            <div>
+            <div id="field-deliveryArea">
               <label className="text-sm font-bold text-gray-700 block mb-1.5 flex items-center gap-1">
                 <MapPin className="w-4 h-4 text-brand-gold" />
-                منطقة التوصيل والخدمة
+                منطقة التوصيل <span className="text-red-500">*</span>
               </label>
               <select
                 value={selectedZone}
-                onChange={(e) => onZoneChange(e.target.value)}
-                className="w-full p-3.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-sm transition-colors bg-brand-cream font-medium"
+                onChange={(e) => {
+                  onZoneChange(e.target.value);
+                  clearError('deliveryArea');
+                }}
+                onFocus={() => clearError('deliveryArea')}
+                onClick={() => clearError('deliveryArea')}
+                className={`w-full p-3.5 rounded-2xl border ${formErrors.deliveryArea ? 'border-red-400 focus:border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-brand-purple'} outline-none text-sm transition-colors bg-brand-cream font-medium`}
               >
-                <optgroup label="أحياء قريبة بـ (5 درهم توصيل)">
+                <option value="">اختر المنطقة</option>
+                <optgroup label="أحياء يغطيها التوصيل المجاني بالكامل 🎁">
+                  {DELIVERY_ZONES.filter(z => z.cost === 0 && z.id !== 'remote').map((zone) => (
+                    <option key={zone.id} value={zone.id}>
+                      {zone.name}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="أحياء قريبة بـ (5 دراهم توصيل)">
                   {DELIVERY_ZONES.filter(z => z.cost === 5).map((zone) => (
                     <option key={zone.id} value={zone.id}>
                       {zone.name}
@@ -219,13 +290,19 @@ export const Checkout: React.FC<CheckoutProps> = ({
                   ))}
                 </optgroup>
                 <optgroup label="أماكن أخرى أكثر بعداً">
-                  {DELIVERY_ZONES.filter(z => z.cost === 0 || z.id === 'remote').map((zone) => (
+                  {DELIVERY_ZONES.filter(z => z.id === 'remote').map((zone) => (
                     <option key={zone.id} value={zone.id}>
                       {zone.name}
                     </option>
                   ))}
                 </optgroup>
               </select>
+              {formErrors.deliveryArea && (
+                <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {formErrors.deliveryArea}
+                </p>
+              )}
               {(() => {
                 const zone = DELIVERY_ZONES.find(z => z.id === selectedZone);
                 return zone ? (
@@ -242,21 +319,15 @@ export const Checkout: React.FC<CheckoutProps> = ({
             {/* Full Street Address */}
             <div>
               <label className="text-sm font-bold text-gray-700 block mb-1.5">
-                عنوان السكن <span className="text-red-500">*</span>
+                عنوان السكن <span className="text-gray-400 font-normal text-xs">(اختياري)</span>
               </label>
               <input
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="مثال: قرب المسجد، رقم المنزل 07، الشقة 2، ..."
-                className={`w-full p-3.5 rounded-2xl border ${formErrors.address ? 'border-red-400 focus:border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-brand-purple'} outline-none text-sm transition-colors bg-brand-cream/40`}
+                className="w-full p-3.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-sm transition-colors bg-brand-cream/40"
               />
-              {formErrors.address && (
-                <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {formErrors.address}
-                </p>
-              )}
             </div>
           </form>
         </div>
@@ -325,8 +396,8 @@ export const Checkout: React.FC<CheckoutProps> = ({
 
             {/* Collapsed items list */}
             <div className="max-h-36 overflow-y-auto mb-4 space-y-2 pr-1">
-              {cartItems.map((item) => (
-                <div key={item.product.id} className="flex justify-between text-xs text-gray-500">
+              {cartItems.map((item, idx) => (
+                <div key={`${item.product.id}-${idx}`} className="flex justify-between text-xs text-gray-500">
                   <span className="line-clamp-1">
                     {item.product.arabicName} <strong className="text-royal-purple font-extrabold">x{item.quantity}</strong>
                   </span>
@@ -338,7 +409,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
             {/* Calculations summaries */}
             <div className="space-y-3.5 border-t border-gray-100 pt-4 text-sm">
               <div className="flex justify-between text-gray-600">
-                <span>سعر الفواكه والحلويات:</span>
+                <span>سعر الطلبية:</span>
                 <span className="font-bold text-gray-800">{subtotal} DH</span>
               </div>
 
@@ -350,7 +421,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
               )}
 
               <div className="flex justify-between text-gray-600">
-                <span>أجرة التوصيل للمنزل:</span>
+                <span>تكلفة الشحن:</span>
                 <span className="font-bold text-gray-800">
                   {isFreeDelivery ? (
                     <span className="text-emerald-600 font-bold">مجاني</span>
@@ -381,10 +452,11 @@ export const Checkout: React.FC<CheckoutProps> = ({
 
             {/* Action buttons */}
             <button
-              onClick={handleSubmit}
-              className="w-full mt-6 py-4 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-500 hover:to-green-600 text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 transition-all cursor-pointer text-base"
+              type="button"
+              onClick={() => handleSubmit()}
+              className="w-full mt-6 py-4 bg-gradient-to-r from-royal-purple to-brand-purple hover:from-brand-purple hover:to-royal-purple text-brand-gold-light border border-brand-gold/30 hover:border-brand-gold/60 font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/20 transition-all cursor-pointer text-base"
             >
-              <Send className="w-5 h-5 text-white" />
+              <Send className="w-5 h-5 text-brand-gold-light" />
               <span>إرسال الطلب الأن</span>
             </button>
 

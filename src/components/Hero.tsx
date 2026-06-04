@@ -1,69 +1,95 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Milk, Sparkles, ChefHat, ShieldCheck, Heart, ArrowLeft, ArrowDown } from 'lucide-react';
+import { SiteSettings } from '../types';
+import heroBanner from '../assets/images/hero_banner_1779343691365.png';
 
 interface HeroProps {
   onOrderNowClick: () => void;
   onExploreStory: () => void;
+  siteSettings: SiteSettings;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory }) => {
+export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, siteSettings }) => {
+  const activeHeroBanner = siteSettings?.heroBannerUrl || heroBanner;
+  const activeHeroBannerMobile = siteSettings?.heroBannerMobileUrl || activeHeroBanner;
+
   return (
     <div className="relative overflow-hidden font-sans">
       
       {/* Visual background using our generated Moroccan andalusion banner */}
       <div className="absolute inset-0 z-0">
+        {/* Mobile: Full-width cover image with a beautiful light blur to ensure text readability and elegance */}
+        <div className="relative w-full h-full md:hidden">
+          <img
+            src={activeHeroBannerMobile}
+            alt="Douaa & Basma Royal Backdrop Mobile"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover blur-[2.5px] scale-105 opacity-95 brightness-[0.95]"
+          />
+          {/* Subtle dark layout protective dim for better text contrast */}
+          <div className="absolute inset-0 bg-brand-cream/15 mix-blend-multiply pointer-events-none" />
+          {/* Gradients to blend banner flawlessly into white and cream pages on mobile too */}
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-cream via-brand-cream/50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-cream/35 to-brand-cream pointer-events-none" />
+        </div>
+
+        {/* Desktop: Standard fullscreen image */}
         <img
-          src="/src/assets/images/hero_banner_1779343691365.png"
-          alt="Douaa & Basma Royal Backdrop"
+          src={activeHeroBanner}
+          alt="Douaa & Basma Royal Backdrop Desktop"
           referrerPolicy="no-referrer"
-          className="w-full h-full object-cover opacity-90 brightness-[0.92] dark:brightness-[0.7]"
+          className="w-full h-full object-cover opacity-90 brightness-[0.92] dark:brightness-[0.7] hidden md:block"
         />
-        {/* Gradients to blend banner flawlessly into white and deep violet pages */}
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-cream via-brand-cream/60 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-cream/40 to-brand-cream" />
+        {/* Gradients to blend banner flawlessly into white and deep violet pages on desktop */}
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-cream via-brand-cream/60 to-transparent pointer-events-none hidden md:block" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-brand-cream/40 to-brand-cream pointer-events-none hidden md:block" />
       </div>
 
       {/* Hero content blocks and headlines */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 md:pt-28 md:pb-32 text-align-start flex flex-col justify-center min-h-[50vh]">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20 md:pt-28 md:pb-32 flex flex-col justify-center min-h-[50vh]">
         
         <motion.div
           initial={{ opacity: 0, x: 45 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-xl space-y-6"
+          className="max-w-xl space-y-4 text-right"
         >
-          {/* Sparkly sub-badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-purple/10 border border-brand-purple/20 text-brand-purple text-xs md:text-sm font-bold">
-            <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow" />
-            <span>مشروع نسائي منزلي فاخر 100%</span>
+          {/* Text and title info inside a clean elegant card on mobile, transparent on desktop */}
+          <div className="bg-white/85 backdrop-blur-md p-6 sm:p-8 md:p-0 rounded-[32px] border border-white/60 md:border-none md:bg-transparent md:backdrop-blur-none shadow-xl shadow-royal-purple/5 md:shadow-none space-y-6">
+            {/* Sparkly sub-badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-purple/15 border border-brand-purple/20 text-brand-purple text-xs md:text-sm font-bold">
+              <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow animate-pulse" />
+              <span>{siteSettings?.promoBadgeText || "مشروع نسائي منزلي فاخر 100%"}</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-display font-black text-royal-purple leading-tight drop-shadow-sm">
+              {siteSettings?.heroTitle || "مذاق طبيعي…"}<br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold-dark via-brand-gold to-brand-gold-light font-extrabold drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
+                {siteSettings?.heroSubTitle || "بلمسة حب"}
+              </span>
+            </h2>
+
+            <p className="text-sm md:text-base text-neutral-800 dark:text-gray-200 leading-relaxed font-semibold md:font-medium">
+              {siteSettings?.heroDescription || "نحضر لكم أفخر وأجود العصائر الطبيعية الباردة والتحليات المنزلية الأصيلة، بمكونات طازجة مختارة بعناية وبمعايير تليق بكرم الضيافة ورفاهية أهليكم"}
+            </p>
           </div>
 
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-display font-black text-royal-purple leading-tight drop-shadow-sm">
-            مذاق طبيعي… <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold-dark via-brand-gold to-brand-gold-light">
-              بلمسة فاخرة
-            </span>
-          </h2>
-
-          <p className="text-sm md:text-base text-gray-700 leading-relaxed font-semibold">
-            نحضر لكم أفخر العصائر الطبيعية المبردة والتحليات المنزلية المغربية الأصيلة، من المنتجات الطازجة وبمعايير تليق بكرم ضيافتكم ورفاهية أهليكم في الفنيدق، الحي الجديد.
-          </p>
-
-          <div className="flex flex-wrap gap-3 pt-4">
+          {/* Action buttons completely outside the card on mobile */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-3 items-center sm:items-start">
             <button
-              onClick={onOrderNowClick}
-              className="px-8 py-4 bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30 active:scale-95 transition-all text-sm cursor-pointer group"
+              onClick={onExploreStory}
+              className="w-2/3 sm:w-auto px-4 py-3 bg-brand-gold hover:bg-brand-gold-dark text-white font-black rounded-xl flex items-center justify-center text-xs transition-all cursor-pointer whitespace-nowrap shadow-md active:scale-95"
             >
-              <span>تصفح قائمة العصائر و التحليات</span>
-              <ArrowDown className="w-4 h-4 text-white hover:translate-y-1 transition-transform" />
+              اقرأ قصة مشروعنا ونشأتنا
             </button>
 
             <button
-              onClick={onExploreStory}
-              className="px-6 py-4 border border-brand-gold hover:border-brand-purple text-brand-gold hover:text-brand-purple font-bold rounded-2xl flex items-center justify-center text-xs transition-colors bg-white/70 backdrop-blur-sm cursor-pointer"
+              onClick={onOrderNowClick}
+              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30 active:scale-95 transition-all text-sm cursor-pointer group"
             >
-              اقرأ قصة مشروعنا ونشأتنا
+              <span>تصفح قائمة العصائر و التحليات</span>
+              <ArrowDown className="w-4 h-4 text-white group-hover:translate-y-1 transition-transform" />
             </button>
           </div>
         </motion.div>
@@ -109,7 +135,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory }) =
 
           <div className="flex flex-col items-center md:items-start text-center md:text-right col-span-2 md:col-span-1 border-t md:border-t-0 border-gray-100 pt-4 md:pt-0">
             <div className="w-full h-full flex flex-col justify-center text-center md:text-right">
-              <span className="text-xl font-black text-brand-green">توصيل بـ 5 DH!</span>
+              <span className="text-xl font-black text-brand-green">التوصيل يبدأ من 0 درهم</span>
               <p className="text-[10px] text-gray-400 mt-1">
                 توصيل فائق السرعة مع الحفاظ التام على البرودة، ومجاني فوق 100 DH.
               </p>

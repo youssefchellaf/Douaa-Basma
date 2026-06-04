@@ -71,47 +71,15 @@ export const Cart: React.FC<CartProps> = ({
         <div className="lg:col-span-8 space-y-4">
           <h1 className="text-2xl font-display font-black text-royal-purple text-align-start flex items-center gap-2">
             <ShoppingBag className="w-6 h-6 text-brand-gold" />
-            <span>سلة المشتريات <span className="text-sm font-normal text-gray-500 px-1">({cartItems.length} {cartItems.length >= 2 ? 'عناصر' : 'عنصر'})</span></span>
+            <span>طلباتي <span className="text-sm font-normal text-gray-500 px-1">({cartItems.length} {cartItems.length >= 2 ? 'عناصر' : 'عنصر'})</span></span>
           </h1>
-
-          {/* Free delivery promo progress meter */}
-          <div className="bg-white p-5 rounded-3xl border border-brand-gold/15 shadow-sm text-align-start">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                <Truck className="w-4.5 h-4.5 text-brand-gold" />
-                توصيل مجاني
-              </span>
-              <span className="text-xs font-black text-brand-gold-dark">الحد المطلوب 100 DH</span>
-            </div>
-
-            {isFreeDelivery ? (
-              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-2xl border border-emerald-100 flex items-center gap-2 mb-1">
-                <Check className="w-4.5 h-4.5 text-emerald-600 font-bold" />
-                <span className="text-sm font-bold">هنيـئـاً لك! طلبيتك مؤهلة للـتوصيـل المجـانـي كـامـلاً!</span>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 mb-3">
-                أضف منتجات بقيمة <span className="font-extrabold text-brand-purple">{remainingForFreeDelivery} DH</span> أخرى لتحصل على توصيل مجاني!
-              </p>
-            )}
-
-            {/* Progress-bar fluid background loading */}
-            <div className="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${freeDeliveryProgress}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className={`h-full rounded-full ${isFreeDelivery ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-gold to-brand-purple-light'}`}
-              />
-            </div>
-          </div>
 
           {/* Items checklist */}
           <div className="space-y-3">
             <AnimatePresence>
-              {cartItems.map((item) => (
+              {cartItems.map((item, idx) => (
                 <motion.div
-                  key={item.product.id}
+                  key={`${item.product.id}-${idx}`}
                   layout
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -131,12 +99,12 @@ export const Cart: React.FC<CartProps> = ({
                         {item.product.arabicName}
                       </h3>
                       <p className="text-xs text-gray-400 mt-1 uppercase font-semibold">
-                        {item.product.category === 'juices' ? 'عصير طبيعي' : item.product.category === 'desserts' ? 'تحلية منزلية' : 'عرض خاص'}
+                        {item.product.category === 'juices' ? 'عصير طبيعي' : item.product.category === 'desserts' ? 'تحلية منزلية' : item.product.category === 'events' ? 'الأفراح و المناسبات' : 'عرض خاص'}
                       </p>
                       
                       <div className="text-brand-gold-dark font-extrabold text-sm mt-1">
                         {item.product.price} DH <span className="text-xs text-gray-400 font-medium">
-                          {item.product.category === 'juices' ? 'للكأس' : item.product.category === 'desserts' ? 'للقطعة' : 'للحبة'}
+                          {item.product.category === 'juices' ? 'للكأس' : item.product.category === 'desserts' ? 'للقطعة' : item.product.category === 'events' ? 'للطلب' : 'للحبة'}
                         </span>
                       </div>
                     </div>
@@ -185,17 +153,36 @@ export const Cart: React.FC<CartProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* Order notes */}
-          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm text-align-start">
-            <label className="text-sm font-bold text-gray-700 block mb-2 font-display">
-              أي ملاحظات للطلب والتحضير (اختياري)
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => onNotesChange(e.target.value)}
-              placeholder="مثال: -يرجى تقليل السكر في عصير الفراولة -زعزع بدون لوز"
-              className="w-full p-3.5 rounded-xl border border-gray-200 focus:border-brand-purple outline-none text-sm transition-colors bg-brand-cream/40 resize-none h-24 font-sans"
-            />
+          {/* Free delivery promo progress meter */}
+          <div className="bg-white p-5 rounded-3xl border border-brand-gold/15 shadow-sm text-align-start">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+                <Truck className="w-4.5 h-4.5 text-brand-gold" />
+                توصيل مجاني
+              </span>
+              <span className="text-xs font-black text-brand-gold-dark">الحد المطلوب 100 DH</span>
+            </div>
+
+            {isFreeDelivery ? (
+              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-2xl border border-emerald-100 flex items-center gap-2 mb-1">
+                <Check className="w-4.5 h-4.5 text-emerald-600 font-bold" />
+                <span className="text-sm font-bold">هنيـئـاً لك! طلبيتك مؤهلة للـتوصيـل المجـانـي كـامـلاً!</span>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 mb-3">
+                أضف منتجات بقيمة <span className="font-extrabold text-brand-purple">{remainingForFreeDelivery} DH</span> أخرى لتحصل على توصيل مجاني!
+              </p>
+            )}
+
+            {/* Progress-bar fluid background loading */}
+            <div className="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${freeDeliveryProgress}%` }}
+                transition={{ duration: 0.5, ease: 'easeOut' }}
+                className={`h-full rounded-full ${isFreeDelivery ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-gold to-brand-purple-light'}`}
+              />
+            </div>
           </div>
         </div>
 
@@ -238,7 +225,7 @@ export const Cart: React.FC<CartProps> = ({
               onClick={onContinueShopping}
               className="w-full mt-2.5 py-3 border border-gray-200 hover:border-brand-purple text-gray-500 hover:text-brand-purple font-bold rounded-2xl flex items-center justify-center text-xs transition-colors cursor-pointer bg-white"
             >
-              الذهاب للتسوق مجددًا
+              إضافة طلب جديد
             </button>
           </div>
         </div>

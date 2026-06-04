@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Package, Clock, ShieldAlert, Sparkles, MapPin, CheckCircle2, ChevronRight, MessageSquare, Phone } from 'lucide-react';
-import { Order } from '../types';
+import { Order, SiteSettings } from '../types';
 
 interface TrackingProps {
   orders: Order[];
   onViewStore: () => void;
+  siteSettings: SiteSettings;
 }
 
-export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore }) => {
+export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSettings }) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [activeStep, setActiveStep] = useState<number>(0);
 
@@ -36,6 +37,7 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore }) => {
     if (selectedOrder.status === 'preparing') initialStep = 1;
     if (selectedOrder.status === 'on_way') initialStep = 2;
     if (selectedOrder.status === 'delivered') initialStep = 3;
+    if (selectedOrder.status === 'cancelled') initialStep = -1;
     
     setActiveStep(initialStep);
   }, [selectedOrder]);
@@ -60,8 +62,8 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore }) => {
       time: 'جاهز'
     },
     {
-      title: 'تم الإستلام بالصحة و الراحة',
-      desc: 'شكراً لك على استقبال طلبك من المندوب 😊 بالصحة والعافية، نتمنى زيارة موقعنا مرة أخرى 💚💜',
+      title: 'تم الإستلام بالصحة والراحة',
+      desc: 'شكراً لك على استقبال طلبك من المندوب بالصحة والعافية، نتمنى زيارة موقعنا مرة أخرى',
       icon: '✓',
       time: 'شكراً'
     }
@@ -156,72 +158,97 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore }) => {
               </div>
             </div>
             
-            <div className="mt-4 pt-4 border-t border-gray-100 bg-brand-purple-soft/30 p-4 rounded-2xl flex items-center justify-between">
-              <span className="text-xs font-bold text-brand-purple-light flex items-center gap-1.5 font-sans">
-                <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow" />
+            <div className={`mt-4 pt-4 border-t border-gray-100 p-4 rounded-2xl flex items-center justify-between ${
+              selectedOrder.status === 'cancelled'
+                ? 'bg-rose-50 text-rose-700 border border-rose-100'
+                : 'bg-brand-purple-soft/30'
+            }`}>
+              <span className={`text-xs font-bold flex items-center gap-1.5 font-sans ${
+                selectedOrder.status === 'cancelled' ? 'text-rose-700' : 'text-brand-purple-light'
+              }`}>
+                {selectedOrder.status === 'cancelled' ? (
+                  <ShieldAlert className="w-4 h-4 text-rose-600 animate-pulse" />
+                ) : (
+                  <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow" />
+                )}
                 الحالة المباشرة: {
                   selectedOrder.status === 'pending' ? 'تم قبول طلبك ومعتمد' :
                   selectedOrder.status === 'preparing' ? 'جاري تحضير وتعبئة مكونات الفواكه' :
                   selectedOrder.status === 'on_way' ? 'غادر المندوب ومسرع بالطريق إليك' :
+                  selectedOrder.status === 'cancelled' ? 'عذراً، تم إلغاء هذا الطلب من إدارة المتجر ❌' :
                   'تم التسليم بنجاح، بالصحة والراحة!'
                 }
               </span>
               <span className="text-[10px] text-gray-400 font-bold bg-white px-2 py-1 rounded-lg">تحديث من لوحة التحكم</span>
             </div>
           </div>
+          
+
 
           {/* Staged list of progress */}
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm text-align-start relative font-sans">
-            <div className="absolute top-10 right-11 bottom-10 w-0.5 bg-gray-100 pointer-events-none" />
-            
-            <div className="space-y-8">
-              {STAGES.map((stage, index) => {
-                const isCompleted = index < activeStep || (selectedOrder.status === 'delivered' && index === 3);
-                const isCurrent = index === activeStep && selectedOrder.status !== 'delivered';
-                const isPending = index > activeStep;
+            {selectedOrder.status === 'cancelled' ? (
+              <div className="text-center py-6">
+                <span className="block text-4xl mb-2">🛑</span>
+                <h4 className="text-sm font-black text-rose-700 mb-1">تمت العودة وإلغاء الطلب بالكامل</h4>
+                <p className="text-xs text-gray-500 max-w-sm mx-auto leading-relaxed">
+                  لم نتمكن من إتمام هذه المعاملة إما لعدم استلامها أو بناءً على رغبتك. شكراً جزيلاً لتفهمك!
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="absolute top-10 right-11 bottom-10 w-0.5 bg-gray-100 pointer-events-none" />
+                
+                <div className="space-y-8">
+                  {STAGES.map((stage, index) => {
+                    const isCompleted = index < activeStep || (selectedOrder.status === 'delivered' && index === 3);
+                    const isCurrent = index === activeStep && selectedOrder.status !== 'delivered';
+                    const isPending = index > activeStep;
 
-                return (
-                  <div key={index} className="flex gap-4 relative">
-                    
-                    {/* Circle index status indicator */}
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold z-10 shrink-0 text-sm transition-all duration-300 ${
-                      isCompleted 
-                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100' 
-                        : isCurrent 
-                          ? 'bg-brand-purple text-white shadow-md shadow-brand-purple/20 ring-4 ring-brand-purple-soft' 
-                          : 'bg-gray-100 text-gray-400'
-                    }`}>
-                      {isCompleted ? '✓' : stage.icon}
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <h4 className={`font-bold text-base transition-colors ${
-                          isCompleted ? 'text-emerald-700' : isCurrent ? 'text-royal-purple' : 'text-gray-400'
-                        }`}>
-                          {stage.title}
-                        </h4>
-                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                    return (
+                      <div key={index} className="flex gap-4 relative">
+                        
+                        {/* Circle index status indicator */}
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold z-10 shrink-0 text-sm transition-all duration-300 ${
                           isCompleted 
-                            ? 'bg-emerald-50 text-emerald-600' 
+                            ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100' 
                             : isCurrent 
-                              ? 'bg-brand-purple-soft text-brand-purple animate-pulse' 
-                              : 'bg-gray-50 text-gray-400'
+                              ? 'bg-brand-purple text-white shadow-md shadow-brand-purple/20 ring-4 ring-brand-purple-soft' 
+                              : 'bg-gray-100 text-gray-400'
                         }`}>
-                          {stage.time}
-                        </span>
-                      </div>
-                      <p className={`text-xs mt-1 leading-relaxed ${
-                        isCompleted ? 'text-gray-500' : isCurrent ? 'text-gray-700' : 'text-gray-400'
-                      }`}>
-                        {stage.desc}
-                      </p>
-                    </div>
+                          {isCompleted ? '✓' : stage.icon}
+                        </div>
 
-                  </div>
-                );
-              })}
-            </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className={`font-bold text-base transition-colors ${
+                              isCompleted ? 'text-emerald-700' : isCurrent ? 'text-royal-purple' : 'text-gray-400'
+                            }`}>
+                              {stage.title}
+                            </h4>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
+                              isCompleted 
+                                ? 'bg-emerald-50 text-emerald-600' 
+                                : isCurrent 
+                                  ? 'bg-brand-purple-soft text-brand-purple animate-pulse' 
+                                  : 'bg-gray-50 text-gray-400'
+                            }`}>
+                              {stage.time}
+                            </span>
+                          </div>
+                          <p className={`text-xs mt-1 leading-relaxed ${
+                            isCompleted ? 'text-gray-500' : isCurrent ? 'text-gray-700' : 'text-gray-400'
+                          }`}>
+                            {stage.desc}
+                          </p>
+                        </div>
+
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
         </div>
@@ -273,8 +300,8 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore }) => {
 
             {/* List items requested */}
             <div className="space-y-3 max-h-40 overflow-y-auto mb-4 pr-1">
-              {selectedOrder.items.map((item) => (
-                <div key={item.product.id} className="flex justify-between items-center text-xs text-gray-600 border-b border-gray-50 pb-2">
+              {selectedOrder.items.map((item, idx) => (
+                <div key={`${item.product.id}-${idx}`} className="flex justify-between items-center text-xs text-gray-600 border-b border-gray-50 pb-2">
                   <span>
                     {item.product.arabicName} <strong className="text-brand-purple font-extrabold">x{item.quantity}</strong>
                   </span>
@@ -310,7 +337,7 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore }) => {
             {/* Direct call support buttons */}
             <div className="grid grid-cols-2 gap-2 mt-4 pt-2">
               <a
-                href="https://wa.me/212705908383"
+                href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
                 target="_blank"
                 rel="noreferrer"
                 className="p-2 border border-emerald-100 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
@@ -320,7 +347,7 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore }) => {
               </a>
 
               <a
-                href="tel:0705908383"
+                href={`tel:${siteSettings?.whatsappNumber || '0705908383'}`}
                 className="p-2 border border-brand-purple-soft rounded-xl bg-brand-purple-soft/30 hover:bg-brand-purple-soft text-brand-purple text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
               >
                 <Phone className="w-3.5 h-3.5" />

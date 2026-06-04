@@ -25,9 +25,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       id={`product-card-${product.id}`}
     >
       {/* Available Status Badge */}
-      {product.isFeatured && (
-        <span className="absolute top-3 right-3 z-10 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1">
-          ‹ متوفر ›
+      {product.isAvailable !== false ? (
+        <span className="absolute top-3 right-3 z-10 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+          <span>متوفر</span>
+        </span>
+      ) : (
+        <span className="absolute top-3 right-3 z-10 bg-gradient-to-r from-rose-500 to-red-650 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 bg-rose-200 rounded-full"></span>
+          <span>غير متوفر</span>
         </span>
       )}
 
@@ -52,8 +58,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </div>
 
           {/* Organic / Quality Leaf tag */}
-          <div className="absolute top-3 left-3 bg-brand-purple/85 backdrop-blur-md w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs" title="طبيعي 100%">
-            <Leaf className="w-4 h-4 text-emerald-400" />
+          <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-gray-100" title="طبيعي 100%">
+            <Leaf className="w-4 h-4 text-emerald-500 fill-emerald-500/10" />
           </div>
         </div>
 
@@ -62,7 +68,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Rating & Category tag */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-brand-purple uppercase">
-              {product.category === 'juices' ? 'عصير طبيعي' : product.category === 'desserts' ? 'تحلية منزلية' : 'عروض خاصة'}
+              {product.category === 'juices' ? 'عصير طبيعي' : product.category === 'desserts' ? 'تحلية منزلية' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
             </span>
             <div className="flex items-center gap-1 bg-brand-gold-soft px-2 py-0.5 rounded-md">
               <Star className="w-3 h-3 text-brand-gold fill-brand-gold" />
@@ -105,11 +111,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
         <div className="flex gap-1.5">
           <button
-            onClick={(e) => onAddToCart(product, e)}
-            className="px-4 py-2 bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white font-bold rounded-2xl flex items-center justify-center gap-1.5 shadow-md shadow-brand-purple/10 active:scale-95 transition-all text-xs cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(product.id);
+            }}
+            className={`px-4 py-2 font-bold rounded-2xl flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all text-xs cursor-pointer ${
+              product.isAvailable !== false
+                ? 'bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white shadow-brand-purple/10'
+                : 'bg-gray-150 border border-gray-200 text-gray-700 hover:bg-gray-200'
+            }`}
           >
-            <ShoppingCart className="w-4 h-4" />
-            <span>أضف للسلة</span>
+            <ShoppingCart className="w-4 h-4 text-current" />
+            <span>{product.isAvailable !== false ? 'طلب الآن' : 'عرض التفاصيل'}</span>
           </button>
         </div>
       </div>

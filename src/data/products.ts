@@ -1,4 +1,7 @@
 import { Product, Category, Testimonial, Coupon } from '../types';
+import productZaza from '../assets/images/product_zaza_1779343709922.png';
+import productMangoUploaded from '../assets/images/product_mango_uploaded_1779885224824.png';
+import productFlan from '../assets/images/product_flan_1779343731407.png';
 
 export const CATEGORIES: Category[] = [
   {
@@ -22,8 +25,14 @@ export const CATEGORIES: Category[] = [
   {
     id: 'specials',
     name: 'عروض خاصة',
-    description: 'مزيج فريد من النكهات لتجربة ملكية لا تنسى',
-    icon: 'Flame',
+    description: 'خصومات حصرية وتشكيلة عروض فريدة',
+    icon: 'Percent',
+  },
+  {
+    id: 'events',
+    name: 'الأفراح و المناسبات',
+    description: 'حلويات وعصائر مناسباتكم السعيدة وأفراحكم بكل فخامة وبهاء',
+    icon: 'PartyPopper',
   },
 ];
 
@@ -34,8 +43,8 @@ export const PRODUCTS: Product[] = [
     arabicName: "زعزع الملكي الفاخر",
     description: "مزيج غني ولذيذ من الأفوكادو الطازج، فلان الكراميل البيتي، قطع الموز، واللوز المحمص المقرمش مع لمسة تزيين فاخرة.",
     price: 25,
-    image: "/src/assets/images/product_zaza_1779343709922.png",
-    category: "specials",
+    image: productZaza,
+    category: "desserts",
     rating: 4.9,
     isFeatured: true,
     prepTime: "5 - 10 دقائق",
@@ -60,7 +69,7 @@ export const PRODUCTS: Product[] = [
     arabicName: "عصير المانجو",
     description: "عصير مانجو استوائي نقي 100% غني بالألياف والفوائد، بنكهة غنية ومنعشة ومحضرة مباشرة عند الطلب.",
     price: 25,
-    image: "/src/assets/images/product_mango_uploaded_1779885224824.png",
+    image: productMangoUploaded,
     category: "juices",
     rating: 4.7,
     isFeatured: true,
@@ -134,7 +143,7 @@ export const PRODUCTS: Product[] = [
     arabicName: "فلان كراميل باللوز الفاخر (تورون)",
     description: "تحلية مغربية أندلسية كلاسيكية محبوبة، محضر من حليب وقشدة بيضاء طازجة ومزين بطبقة غنية من التورون ورقائق اللوز المقرمشة.",
     price: 15,
-    image: "/src/assets/images/product_flan_1779343731407.png",
+    image: productFlan,
     category: "desserts",
     rating: 4.8,
     isFeatured: true,
@@ -158,27 +167,51 @@ export const PRODUCTS: Product[] = [
 export const TESTIMONIALS: Testimonial[] = [
   {
     id: 1,
-    name: "فاطمة الزهراء الإدريسي",
-    city: "الرباط",
+    name: "فاطمة",
+    city: "حي الشبار",
     rating: 5,
-    comment: "أفخر زعزع قد تذوقته في حياتي! ليس مجرد مشروب بل لوحة فنية شهية، الفلان في داخله طعمه رهيب والتقديم غاية في الأناقة والاستقبال الرائع. تبارك الله عليكما دعاء وبسمة",
-    date: "منذ يومين"
+    comment: "عصير الأفوكادو باللوز طعمه في غاية الروعة ومذاقه طبيعي ولذيذ جداً ومحضر بإتقان ونظافة تامة. التوصيل سريع، الله يوفقكم!",
+    date: "•زبون"
   },
   {
     id: 2,
-    name: "أمين الودغيري",
-    city: "الدار البيضاء",
+    name: "يوسف",
+    city: "حي بنديبان",
     rating: 5,
-    comment: "المذاق حقيقي جداً وطبيعي تظهر جودة الفواكه الطازجة غير المفرزة مستواهم راقي جداً والتوصيل سريع وبطريقة تحفظ البرودة. فخور بدعم هذا المشروع الفاخر والمواظبة على الطلب منه.",
-    date: "منذ أسبوع"
+    comment: "عصير الموز مع التفاح لذيذ ومنعش للغاية، الفواكه طازجة وطعمها ممتع ومثالي للانتعاش اليومي. جودة الخدمة ممتازة وسريعة.",
+    date: "•زبون"
   },
   {
     id: 3,
-    name: "أمينة العلوي",
-    city: "فاس الفخامة",
+    name: "سلوى",
+    city: "حي أغطاس",
     rating: 5,
-    comment: "الفلان كراميل باللوز (التورون) أعادني لذكريات الأندلس الرائعة، تناغم السكر المعتدل مع دسامة الكريمة لا يقاوم. أنصح الجميع بتجربة منتجات Douaa & Basma.",
-    date: "منذ 3 أيام"
+    comment: "جربت عصير بناشي وهو كوكتيل الفواكه، المذاق رائع وممتاز جداً وقوامه متناسق ولذيذ. يصل المشروب بارداً ومنعشاً كأنه محضر للتو!",
+    date: "•زبون"
+  },
+  {
+    id: 4,
+    name: "أحمد",
+    city: "الحي الجديد",
+    rating: 5,
+    comment: "عصير البرتقال الطازج طعمه طبيعي مائة بالمائة ومنعش جداً. النظافة استثنائية والتوصيل سريع وبطريقة تحفظ البرودة المثالية.",
+    date: "•زبون"
+  },
+  {
+    id: 5,
+    name: "سهام",
+    city: "ريفيين",
+    rating: 5,
+    comment: "عصير فاكهة الدراغون غاية في الأناقة والانتعاش والمذاق متميز وفريد جداً. تجربة رائعة وسأواصل الطلب والتعامل معكم بالتأكيد.",
+    date: "•زبون"
+  },
+  {
+    id: 6,
+    name: "ياسين",
+    city: "حي الباطيو",
+    rating: 5,
+    comment: "عصير الفراولة مع الإجاص لذيذ جداً ومنسجم بمذاق خفيف ورائع يفوق التوقعات. مشروب عالي الجودة وخالٍ من أي إضافات، بالصحة والراحة.",
+    date: "•زبون"
   }
 ];
 
@@ -189,6 +222,13 @@ export const APP_COUPONS: Coupon[] = [
 ];
 
 export const DELIVERY_ZONES = [
+  // Free delivery places (توصيل مجاني)
+  { id: "new_neighborhood", name: "الحي الجديد", cost: 0, description: "الحي الجديد (توصيل سريع بالمجان)" },
+  { id: "shabar", name: "حي الشبار", cost: 0, description: "حي الشبار (توصيل مجاني بالكامل بدون أدنى كلفة)" },
+  { id: "sabila", name: "حي سبيلة", cost: 0, description: "حي سبيلة (توصيل مجاني بالكامل بدون أدنى كلفة)" },
+  { id: "zawiya", name: "حي الزاوية", cost: 0, description: "حي الزاوية (توصيل مجاني بالكامل بدون أدنى كلفة)" },
+  { id: "fawqiya", name: "حومة الفوقية", cost: 0, description: "حومة الفوقية (توصيل مجاني بالكامل بدون أدنى كلفة)" },
+
   // 5 DH places
   { id: "baisa", name: "حي بايصة", cost: 5, description: "حي بايصة (توصيل سريع بـ 5 دراهم)" },
   { id: "amira", name: "حي الاميرة", cost: 5, description: "حي الاميرة (توصيل سريع بـ 5 دراهم)" },
@@ -196,13 +236,10 @@ export const DELIVERY_ZONES = [
   { id: "kandissa", name: "حي كنديسة", cost: 5, description: "حي كنديسة (توصيل سريع بـ 5 دراهم)" },
   { id: "aghattas", name: "حي أغطاس", cost: 5, description: "حي أغطاس (توصيل سريع بـ 5 دراهم)" },
   { id: "sidi_boughaba", name: "حي سيدي بوغابة", cost: 5, description: "حي سيدي بوغابة (توصيل سريع بـ 5 دراهم)" },
-  { id: "sabila", name: "حي سبيلة", cost: 5, description: "حي سبيلة (توصيل سريع بـ 5 دراهم)" },
-  { id: "shabar", name: "حي الشبار", cost: 5, description: "حي الشبار (توصيل سريع بـ 5 دراهم)" },
   { id: "merja", name: "حي المرجة", cost: 5, description: "حي المرجة (توصيل سريع بـ 5 دراهم)" },
   { id: "ceramica", name: "حي سيراميكا", cost: 5, description: "حي سيراميكا (توصيل سريع بـ 5 دراهم)" },
   { id: "patio", name: "حي الباطيو", cost: 5, description: "حي الباطيو (توصيل سريع بـ 5 دراهم)" },
   { id: "buosito", name: "حي بوسيطو", cost: 5, description: "حي بوسيطو (توصيل سريع بـ 5 دراهم)" },
-  { id: "fawqiya", name: "حومة الفوقية", cost: 5, description: "حومة الفوقية (توصيل سريع بـ 5 دراهم)" },
   { id: "bahr", name: "حومة د بحر", cost: 5, description: "حومة د بحر (توصيل سريع بـ 5 دراهم)" },
   { id: "wad", name: "حومة د الواد", cost: 5, description: "حومة د الواد (توصيل سريع بـ 5 دراهم)" },
 

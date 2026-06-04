@@ -2,17 +2,34 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Mail, Phone, Instagram, Facebook, MessageCircle, MapPin, ShieldCheck, Soup, Truck, Award, Sparkles, Clock } from 'lucide-react';
 
+import { SiteSettings } from '../types';
+
 interface InfoPagesProps {
   activeTab: 'about' | 'delivery' | 'contact';
+  siteSettings: SiteSettings;
 }
 
-export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
+export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab, siteSettings }) => {
   const containerVariants = {
     hidden: { opacity: 0, y: 15 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
   };
 
   if (activeTab === 'about') {
+    const titleText = siteSettings?.aboutTitle || "من نحن - Douaa & Basma";
+    let firstPart = titleText;
+    let secondPart = "";
+
+    const separators = [" - ", " – ", " — ", "-", "–", "—"];
+    for (const sep of separators) {
+      if (titleText.includes(sep)) {
+        const parts = titleText.split(sep);
+        firstPart = parts[0];
+        secondPart = parts.slice(1).join(sep);
+        break;
+      }
+    }
+
     return (
       <motion.div
         variants={containerVariants}
@@ -27,21 +44,28 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
           
           <div className="text-center mb-8">
             <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block mb-1">قصتنا وهويتنا</span>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-royal-purple flex items-center justify-center gap-2">
-              <Sparkles className="w-6 h-6 text-brand-gold animate-pulse-slow" />
-              من نحن - Douaa & Basma
-              <Sparkles className="w-6 h-6 text-brand-gold animate-pulse-slow" />
-            </h1>
+            <div className="flex flex-col items-center justify-center gap-1">
+              <h1 className="text-3xl md:text-4xl font-display font-bold text-royal-purple flex items-center justify-center gap-2">
+                <Sparkles className="w-5 h-5 text-brand-gold animate-pulse-slow" />
+                {firstPart.trim()}
+                <Sparkles className="w-5 h-5 text-brand-gold animate-pulse-slow" />
+              </h1>
+              {secondPart && (
+                <span className="text-xl md:text-2xl font-display text-brand-gold font-extrabold drop-shadow-sm tracking-wide mt-2">
+                  {secondPart.trim()}
+                </span>
+              )}
+            </div>
             <div className="w-32 h-1 bg-gradient-to-r from-transparent via-brand-gold to-transparent mx-auto mt-4" />
           </div>
 
           <div className="space-y-8 text-lg text-gray-700 leading-relaxed text-center">
             <p className="font-medium text-xl text-brand-purple">
-              مرحبًا بكم في عالم النكهات الفاخرة والطبيعية 100%
+              {siteSettings?.aboutHeroText || "مرحبًا بكم في عالم النكهات الفاخرة والطبيعية 100%"}
             </p>
             
             <p className="bg-brand-purple-soft/40 p-6 rounded-2xl border border-brand-purple/10">
-              <strong className="text-royal-purple">Douaa & Basma</strong> هو مشروع نسائي مغربي شغوف ومتخصص في تحضير العصائر الطبيعية والتحليات المنزلية الراقية. نقدم لكم تشكيلة مختارة من المنتجات المعدة بمكونات طازجة منتقاة حبة بحبة، لنصنع تجربة فريدة تمزج بين الفخامة والأصالة المغربية.
+              {siteSettings?.aboutMainText || "Douaa & Basma هو مشروع نسائي مغربي شغوف ومتخصص في تحضير العصائر الطبيعية والتحليات المنزلية الراقية. نقدم لكم تشكيلة مختارة من المنتجات المعدة بمكونات طازجة منتقاة حبة بحبة، لنصنع تجربة فريدة تمزج بين الفخامة والأصالة المغربية."}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
@@ -109,8 +133,30 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
               <p className="text-emerald-700 text-base">اطلب ما قيمته 100 DH أو أكثر، وسوف نتحمل تكلفة التوصيل بالكامل لجميع أحياء المدينة.</p>
             </div>
 
-            <h3 className="text-xl font-bold text-royal-purple border-r-4 border-brand-gold pr-3 mt-8">تسعيرة التوصيل حسب المنطقة</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+             <h3 className="text-xl font-bold text-royal-purple border-r-4 border-brand-gold pr-3 mt-8">تسعيرة التوصيل حسب المنطقة</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-emerald-50/50 p-6 rounded-2xl border border-emerald-200/60 shadow-sm flex flex-col justify-between">
+                <div>
+                  <span className="px-3 py-1 text-xs font-bold rounded-full bg-emerald-500 text-white inline-block">توصيل مجاني 🎁</span>
+                  <h4 className="font-bold text-gray-800 mt-3 text-lg">أحياء معفيّة</h4>
+                  <p className="text-sm text-gray-500 mt-2">توصيل سريع مجاني بالكامل بدون أدنى تكلفة مضافة للطلب.</p>
+                  <div className="mt-3 text-[11px] text-gray-500 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/10">
+                    <span className="font-bold text-emerald-700 block mb-1">الأحياء المشمولة:</span>
+                    <span className="leading-relaxed">الحي الجديد، حي الشبار، حي سبيلة، حي الزاوية، حومة الفوقية.</span>
+                  </div>
+                </div>
+                <div className="border-t border-emerald-100 pt-4 mt-4 grid grid-cols-2 gap-2 text-right">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-gray-400 text-[11px] font-bold">توقيت التوصيل</span>
+                    <span className="text-gray-600 text-xs flex items-center gap-1 whitespace-nowrap"><Clock className="w-3.5 h-3.5 flex-shrink-0" /> سريع ومبرد</span>
+                  </div>
+                  <div className="flex flex-col gap-0.5 items-end">
+                    <span className="text-emerald-600 text-[11px] font-bold">ثمن التوصيل</span>
+                    <span className="font-bold text-emerald-600 text-lg leading-snug animate-pulse">0 DH (مجاناً)</span>
+                  </div>
+                </div>
+              </div>
+
               <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
                 <div>
                   <span className="px-3 py-1 text-xs font-bold rounded-full bg-brand-purple-soft text-brand-purple">داخل المدينة</span>
@@ -118,7 +164,7 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
                   <p className="text-sm text-gray-500 mt-2">توصيل سريع عبر الدراجات النارية المجهزة بالحقائب المبردة.</p>
                   <div className="mt-3 text-[11px] text-gray-500 bg-brand-purple-soft/20 p-2.5 rounded-xl border border-brand-purple/10">
                     <span className="font-bold text-brand-purple block mb-1">الأحياء المشمولة:</span>
-                    <span className="leading-relaxed">حي بايصة، حي الأميرة، حي رأس لوطا، حي كنديسة، حي أغطاس، حي سيدي بوغابة، حي سبيلة، حي الشبار، حي المرجة، حي سيراميكا، حي الباطيو، حي بوسيطو، حومة الفوقية، حومة د بحر، حومة د الواد.</span>
+                    <span className="leading-relaxed">حي بايصة، حي الأميرة، حي رأس لوطا، حي كنديسة، حي أغطاس، حي سيدي بوغابة، حي المرجة، حي سيراميكا، حي الباطيو، حي بوسيطو، حومة د بحر، حومة د الواد.</span>
                   </div>
                 </div>
                 <div className="border-t border-gray-100 pt-4 mt-4 grid grid-cols-2 gap-2 text-right">
@@ -216,7 +262,7 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
             <h3 className="text-xl font-bold text-royal-purple mb-4">قنوات التواصل الرسمية</h3>
             
             <a
-              href="https://wa.me/212705908383"
+              href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-4 p-5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 transition-all text-emerald-900 group shadow-sm"
@@ -225,14 +271,14 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
                 <MessageCircle className="w-6 h-6" />
               </div>
               <div className="text-align-start">
-                <p className="text-xs text-emerald-700 font-medium">واتساب الطلبات الفوري</p>
-                <p className="text-lg font-bold">0705908383</p>
+                <p className="text-xs text-emerald-700 font-medium font-sans">واتساب الطلبات الفوري</p>
+                <p className="text-lg font-bold font-mono">{siteSettings?.whatsappNumber || '0705908383'}</p>
                 <p className="text-xs text-emerald-600 mt-1">اضغط للتحدث معنا مباشرة والطلب السريع</p>
               </div>
             </a>
 
             <a
-              href="https://instagram.com/douaabasma_1"
+              href={siteSettings?.instagramUrl || "https://instagram.com/douaabasma_1"}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-4 p-5 rounded-2xl bg-pink-50 hover:bg-pink-100 border border-pink-100 transition-all text-pink-900 group shadow-sm"
@@ -241,15 +287,15 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Instagram className="w-6 h-6" />
               </div>
-              <div className="text-align-start">
-                <p className="text-xs text-pink-700 font-medium">حسابنا على الإنستغرام</p>
-                <p className="text-lg font-bold">@douaabasma_1</p>
+              <div className="text-align-start font-sans">
+                <p className="text-xs text-pink-700 font-medium font-sans">حسابنا على الإنستغرام</p>
+                <p className="text-lg font-bold font-mono">@{ (siteSettings?.instagramUrl || 'douaabasma_1').replace(/\/$/, '').split('/').pop() || 'douaabasma_1' }</p>
                 <p className="text-xs text-pink-600 mt-1 font-medium">تابعوا كواليس التحضير والآراء اليومية 📸</p>
               </div>
             </a>
 
             <a
-              href="https://m.facebook.com/douaabasma01/"
+              href={siteSettings?.facebookUrl || "https://m.facebook.com/douaabasma01/"}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-4 p-5 rounded-2xl bg-blue-50 hover:bg-blue-100 border border-blue-100 transition-all text-blue-900 group shadow-sm"
@@ -258,9 +304,9 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab }) => {
               <div className="w-12 h-12 rounded-xl bg-blue-600 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
                 <Facebook className="w-6 h-6" />
               </div>
-              <div className="text-align-start">
+              <div className="text-align-start font-sans">
                 <p className="text-xs text-blue-700 font-medium">صفحتنا على الفيسبوك</p>
-                <p className="text-lg font-bold">Douaa & Basma</p>
+                <p className="text-lg font-bold">{siteSettings?.storeName || "Douaa & Basma"}</p>
                 <p className="text-xs text-blue-600 mt-1 font-medium">تابعوا منشوراتنا وعروضنا المباشرة على فيسبوك 👍</p>
               </div>
             </a>

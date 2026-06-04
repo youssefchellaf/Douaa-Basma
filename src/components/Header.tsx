@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingCart, Award, Sparkles, MapPin, Phone, Settings, Milk, Heart, MessageCircle, Menu, ChevronDown, ChevronUp, X } from 'lucide-react';
-import { CartItem } from '../types';
+import { CartItem, SiteSettings } from '../types';
 
 interface HeaderProps {
   currentView: string;
@@ -13,6 +13,7 @@ interface HeaderProps {
   onOpenCart: () => void;
   isAdminUnlocked: boolean;
   onUnlockAdmin: () => void;
+  siteSettings: SiteSettings;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,6 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCart,
   isAdminUnlocked,
   onUnlockAdmin,
+  siteSettings,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [logoClicks, setLogoClicks] = useState(0);
@@ -47,10 +49,10 @@ export const Header: React.FC<HeaderProps> = ({
 
   const baseNavLinks = [
     { view: 'home', label: 'الرئيسية' },
-    { view: 'about', label: 'من نحن' },
-    { view: 'delivery', label: 'التوصيل' },
-    { view: 'contact', label: 'اتصل بنا' },
     { view: 'track', label: 'تتبع الطلب' },
+    { view: 'delivery', label: 'التوصيل' },
+    { view: 'about', label: 'من نحن' },
+    { view: 'contact', label: 'اتصل بنا' },
     { view: 'admin', label: 'لوحة التحكم', isSpecial: true },
   ];
 
@@ -111,22 +113,22 @@ export const Header: React.FC<HeaderProps> = ({
                         let desc = "تصفح القائمة الرئيسية للتحليات والعصائر";
                         if (link.view === 'home') {
                           LinkIcon = Milk;
-                          desc = "الرئيسية وقائمة العصائر والزعزع";
+                          desc = "الرئيسية وقائمة المنتجات";
                         } else if (link.view === 'about') {
                           LinkIcon = Heart;
-                          desc = "نشأتنا كواليس التحضير الطبيعي المتقن";
+                          desc = "نشأتنا وكواليس التحضير المتقن";
                         } else if (link.view === 'delivery') {
                           LinkIcon = MapPin;
                           desc = "مناطق التوصيل وشروط التوصيل المجاني";
                         } else if (link.view === 'contact') {
                           LinkIcon = Phone;
-                          desc = "اتصل بنا لطلبات الأفراح والمناسبات الفخمة";
+                          desc = "اتصل بنا لطلبات الأفراح والمناسبات";
                         } else if (link.view === 'track') {
                           LinkIcon = Award;
-                          desc = "تتبع حالة طلبك الفوري عبر واتساب";
+                          desc = "تتبع حالة طلبك الفوري من هنا";
                         } else if (link.view === 'admin') {
                           LinkIcon = Settings;
-                          desc = "لوحة التحكم لإدارة الكوبونات والطلبات";
+                          desc = "لوحة التحكم الإدارية";
                         }
 
                         const isCurrent = currentView === link.view;
@@ -183,7 +185,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={handleLogoClick}
         >
           <img 
-            src="https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd" 
+            src={siteSettings?.logoUrl || "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd"} 
             alt="Logo" 
             className="w-32 h-32 md:w-36 md:h-36 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
             referrerPolicy="no-referrer"
@@ -195,11 +197,11 @@ export const Header: React.FC<HeaderProps> = ({
           
           {/* Support quick message button */}
           <a
-            href="https://wa.me/212705908383"
+            href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
             target="_blank"
             rel="noreferrer"
             className="p-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all cursor-pointer shadow-sm hidden sm:flex items-center gap-1.5 text-xs font-bold"
-            title="تحدث مباشرة مع دعاء وبسمة"
+            title="تحدث مباشرة مع فريق الدعم"
           >
             <MessageCircle className="w-4.5 h-4.5" />
             <span>طلب فوري</span>
@@ -213,7 +215,7 @@ export const Header: React.FC<HeaderProps> = ({
                 ? 'bg-gradient-to-r from-brand-gold to-brand-gold-light text-white shadow-md shadow-brand-gold/20' 
                 : 'bg-brand-cream border border-gray-100 text-gray-600 hover:bg-gray-100'
             }`}
-            title="فتح سلة العقود والطلبات"
+            title="عرض طلباتي"
           >
             <ShoppingCart className="w-5.5 h-5.5" />
             

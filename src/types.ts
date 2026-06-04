@@ -1,4 +1,4 @@
-export type CategoryId = 'all' | 'juices' | 'desserts' | 'specials';
+export type CategoryId = 'all' | 'juices' | 'desserts' | 'specials' | 'events';
 
 export interface Category {
   id: CategoryId;
@@ -17,6 +17,7 @@ export interface Product {
   category: CategoryId;
   rating: number;
   isFeatured?: boolean;
+  isAvailable?: boolean;
   prepTime: string; // e.g. "5-10 دقائق"
   ingredients: string[];
 }
@@ -37,10 +38,11 @@ export interface Order {
   items: CartItem[];
   subtotal: number;
   total: number;
-  status: 'pending' | 'preparing' | 'on_way' | 'delivered';
+  status: 'pending' | 'preparing' | 'on_way' | 'delivered' | 'cancelled';
   date: string;
   couponApplied?: string;
   discountAmount?: number;
+  whatsappUrl?: string;
 }
 
 export interface Coupon {
@@ -58,3 +60,32 @@ export interface Testimonial {
   comment: string;
   date: string;
 }
+
+export interface SiteSettings {
+  logoUrl: string;
+  heroBannerUrl: string;
+  heroBannerMobileUrl?: string;
+  faviconUrl: string;
+  heroTitle: string;
+  heroSubTitle: string;
+  heroDescription: string;
+  promoBadgeText: string;
+  storeName: string;
+  storeDescription: string;
+  aboutTitle: string;
+  aboutHeroText: string;
+  aboutMainText: string;
+  whatsappNumber: string;
+  whatsappMessageTemplate: string;
+  instagramUrl: string;
+  facebookUrl: string;
+  footerCredits: string;
+  // Customizable paths/routes
+  aboutPath?: string;
+  deliveryPath?: string;
+  contactPath?: string;
+  trackPath?: string;
+  adminPath?: string;
+  homePath?: string;
+}
+

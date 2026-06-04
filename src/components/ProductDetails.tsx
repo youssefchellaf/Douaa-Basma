@@ -97,7 +97,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none md:bg-gradient-to-l" />
                 <div className="absolute bottom-6 right-6 left-6 text-white text-align-start">
                   <span className="bg-brand-gold text-white text-xs font-bold px-3 py-1 rounded-full uppercase inline-block mb-2">
-                    {product.category === 'juices' ? 'عصائر طبيعية' : product.category === 'desserts' ? 'تحليات منزلية' : 'عروض خاصة'}
+                    {product.category === 'juices' ? 'عصائر طبيعية' : product.category === 'desserts' ? 'تحليات منزلية' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
                   </span>
                   <h2 className="text-2xl md:text-3xl font-display font-black text-white drop-shadow-md">
                     {product.arabicName}
@@ -116,19 +116,30 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                           <Star key={s} className="w-4 h-4 text-brand-gold fill-brand-gold" />
                         ))}
                       </div>
-                      <span className="text-sm font-bold text-gray-800">{product.rating} (المبيعات الأرقى)</span>
+                      <span className="text-sm font-bold text-gray-800">{product.rating} (مميز)</span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-gray-500 text-sm font-semibold">
-                      <Clock className="w-4 h-4 text-brand-purple" />
-                      <span>زمن التحضير: {product.prepTime}</span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-1.5 text-gray-500 text-sm font-semibold">
+                        <Clock className="w-4 h-4 text-brand-purple" />
+                        <span>زمن التحضير: {product.prepTime}</span>
+                      </div>
+
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border ${
+                        product.isAvailable !== false
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                          : 'bg-rose-50 text-rose-700 border-rose-100'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${product.isAvailable !== false ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
+                        <span>{product.isAvailable !== false ? 'متوفر' : 'غير متوفر'}</span>
+                      </span>
                     </div>
                   </div>
 
                   {/* Slogan details and long decscription */}
                   <div className="space-y-4">
                     <div>
-                      <h4 className="text-sm font-bold text-gray-500">الوصف اللذيذ</h4>
+                      <h4 className="text-sm font-bold text-gray-500">الوصف</h4>
                       <p className="text-gray-800 leading-relaxed mt-1 text-base font-medium">
                         {product.description}
                       </p>
@@ -136,7 +147,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
 
                     {/* Ingredients list */}
                     <div>
-                      <h4 className="text-sm font-bold text-gray-400 mb-2">المكونات الطازجة المستخدمة والفوائد</h4>
+                      <h4 className="text-sm font-bold text-gray-400 mb-2">المكونات</h4>
                       <div className="grid grid-cols-2 gap-2 bg-brand-beige/50 p-4 rounded-2xl border border-brand-gold/10">
                         {product.ingredients.map((ing, idx) => (
                           <span key={idx} className="flex items-center gap-1.5 text-sm text-gray-700">
@@ -150,12 +161,12 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                     {/* Instruction Box */}
                     <div>
                       <label className="text-sm font-bold text-gray-400 block mb-1">
-                        تخصيص الطلب وملاحظات التحضير (اختياري)
+                        تخصيص مكونات الطلب (اختياري)
                       </label>
                       <textarea
                         value={instructions}
                         onChange={(e) => setInstructions(e.target.value)}
-                        placeholder="أضف تعليماتك، مثل: «بدون شيكولاتة للتزيين»، «بدون موز»، «حلاوة خفيفة»، إلخ..."
+                        placeholder="أضف تعليماتك، مثل: (بلا سكر، بدون لوز، ناقص حلاوة، خفيف ولا تقيل، الى اخره...)"
                         className="w-full h-18 p-3 rounded-xl border border-gray-200 focus:border-brand-purple outline-none text-sm leading-relaxed text-gray-700 resize-none bg-brand-cream"
                       />
                     </div>
@@ -200,14 +211,21 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                   <div className="w-full sm:w-auto">
                     <button
                       onClick={handleAdd}
-                      disabled={successMsg}
+                      disabled={successMsg || product.isAvailable === false}
                       className={`w-full sm:w-auto px-8 py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 text-white shadow-lg transition-all text-sm cursor-pointer ${
-                        successMsg
+                        product.isAvailable === false
+                          ? 'bg-gray-400 cursor-not-allowed shadow-none'
+                          : successMsg
                           ? 'bg-emerald-500 shadow-emerald-200'
                           : 'bg-gradient-to-r from-brand-gold to-brand-gold-dark hover:shadow-brand-gold/20'
                       }`}
                     >
-                      {successMsg ? (
+                      {product.isAvailable === false ? (
+                        <>
+                          <X className="w-5 h-5 text-white" />
+                          <span>غير متوفر حالياً</span>
+                        </>
+                      ) : successMsg ? (
                         <>
                           <CheckCircle className="w-5 h-5 text-white animate-bounce" />
                           <span>تـم إضافته للسلة بنجاح!</span>
@@ -215,7 +233,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                       ) : (
                         <>
                           <ShoppingBag className="w-5 h-5 text-white" />
-                          <span>أضف للسلـة الـآن ({quantity})</span>
+                          <span>أضف للسلة ({quantity})</span>
                         </>
                       )}
                     </button>

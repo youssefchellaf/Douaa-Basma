@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, Filter, ArrowUpDown, ShoppingCart, Trash2, X, Plus, Minus, CheckCircle, 
   MessageSquare, Instagram, Facebook, Heart, ChevronLeft, Award, Sparkles, AlertCircle, RefreshCw,
-  Phone, MessageCircle
+  ChevronDown, ChevronUp, Phone, MessageCircle
 } from 'lucide-react';
 
-import { Product, CartItem, Order, Coupon } from './types';
+import { Product, CartItem, Order, Coupon, SiteSettings } from './types';
 import { PRODUCTS, CATEGORIES, TESTIMONIALS, DELIVERY_ZONES, APP_COUPONS } from './data/products';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -37,13 +37,170 @@ const getProductsLookup = (): Product[] => {
 export default function App() {
   // --- STATE SYSTEM ---
   const [currentView, setCurrentView] = useState<string>('home');
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => {
+    const defaults = {
+      logoUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
+      heroBannerUrl: "", // fallback to imported/def
+      heroBannerMobileUrl: "",
+      faviconUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
+      heroTitle: "مذاق طبيعي…",
+      heroSubTitle: "بلمسة حب",
+      heroDescription: "نحضر لكم أفخر وأجود العصائر الطبيعية الباردة والتحليات المنزلية الأصيلة، بمكونات طازجة مختارة بعناية وبمعايير تليق بكرم الضيافة ورفاهية أهليكم",
+      promoBadgeText: "مشروع نسائي منزلي فاخر 100%",
+      storeName: "Douaa & Basma",
+      storeDescription: "أرقى مشروع محلي مغربي لتقديم العصائر و التحليات المنزلية. و نسعى دائماً لترك بصمة من المتعة والفرح بمناسباتكم الخاصة والعامة.",
+      aboutTitle: "من نحن - Douaa & Basma",
+      aboutHeroText: "مرحبًا بكم في عالم النكهات الفاخرة والطبيعية 100%",
+      aboutMainText: "Douaa & Basma هو مشروع نسائي مغربي شغوف ومتخصص في تحضير العصائر الطبيعية والتحليات المنزلية الراقية. نقدم لكم تشكيلة مختارة من المنتجات المعدة بمكونات طازجة منتقاة حبة بحبة، لنصنع تجربة فريدة تمزج بين الفخامة والأصالة المغربية.",
+      whatsappNumber: "212705908383",
+      whatsappMessageTemplate: "طلب جديد من متجر Douaa & Basma",
+      instagramUrl: "https://instagram.com/douaabasma_1",
+      facebookUrl: "https://m.facebook.com/douaabasma01/",
+      footerCredits: "جميع الحقوق محفوظة لعلامة",
+      aboutPath: "/about-us",
+      deliveryPath: "/delivery",
+      contactPath: "/contact-us",
+      trackPath: "/track",
+      adminPath: "/admin",
+      homePath: "/"
+    };
+
+    try {
+      const saved = localStorage.getItem('db_site_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { ...defaults, ...parsed };
+      }
+    } catch (e) {
+      console.error("Error loading db_site_settings:", e);
+    }
+    return defaults;
+  });
+
+  const handleUpdateSiteSettings = (newSettings: SiteSettings) => {
+    const updated = {
+      ...newSettings,
+      // Fallback path definitions if cleared
+      aboutPath: newSettings.aboutPath || "/about-us",
+      deliveryPath: newSettings.deliveryPath || "/delivery",
+      contactPath: newSettings.contactPath || "/contact-us",
+      trackPath: newSettings.trackPath || "/track",
+      adminPath: newSettings.adminPath || "/admin",
+      homePath: newSettings.homePath || "/"
+    };
+
+    // dynamically update the URL path in the history if the active view's path is updated
+    let targetPath = '';
+    if (currentView === 'about') targetPath = updated.aboutPath;
+    else if (currentView === 'delivery') targetPath = updated.deliveryPath;
+    else if (currentView === 'contact') targetPath = updated.contactPath;
+    else if (currentView === 'track') targetPath = updated.trackPath;
+    else if (currentView === 'admin') targetPath = updated.adminPath;
+    else if (currentView === 'home') targetPath = updated.homePath;
+
+    if (targetPath) {
+      if (!targetPath.startsWith('/')) {
+        targetPath = '/' + targetPath;
+      }
+      try {
+        if (window.location.pathname !== targetPath) {
+          window.history.replaceState(null, '', targetPath);
+        }
+      } catch (e) {
+        console.error("Failed to update history state:", e);
+      }
+    }
+
+    setSiteSettings(updated);
+    saveToLocalStorage('db_site_settings', JSON.stringify(updated));
+  };
+
+  const handleSetView = (view: string) => {
+    setCurrentView(view);
+    setIsSidebarCartOpen(false);
+
+    let targetPath = '';
+    if (view === 'about') targetPath = siteSettings.aboutPath || '/about-us';
+    else if (view === 'delivery') targetPath = siteSettings.deliveryPath || '/delivery';
+    else if (view === 'contact') targetPath = siteSettings.contactPath || '/contact-us';
+    else if (view === 'track') targetPath = siteSettings.trackPath || '/track';
+    else if (view === 'admin') targetPath = siteSettings.adminPath || '/admin';
+    else targetPath = siteSettings.homePath || '/';
+
+    // Format targetPath correctly
+    if (targetPath && !targetPath.startsWith('/')) {
+      targetPath = '/' + targetPath;
+    }
+
+    try {
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState(null, '', targetPath);
+      }
+    } catch (e) {
+      console.error("Failed to update history state:", e);
+    }
+  };
+
+  // Listen to browser forward/back buttons and handle URL logic
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const path = window.location.pathname;
+      const hash = window.location.hash.replace('#', '');
+
+      const checkPath = (configuredPath: string | undefined, defaultVal: string) => {
+        const val = configuredPath || defaultVal;
+        const cleanConf = val.startsWith('/') ? val : '/' + val;
+        const cleanConfNoSlash = cleanConf.replace(/^\//, '');
+        return path === cleanConf || hash === cleanConf || hash === cleanConfNoSlash;
+      };
+
+      if (checkPath(siteSettings.aboutPath, '/about-us')) {
+        setCurrentView('about');
+      } else if (checkPath(siteSettings.deliveryPath, '/delivery')) {
+        setCurrentView('delivery');
+      } else if (checkPath(siteSettings.contactPath, '/contact-us')) {
+        setCurrentView('contact');
+      } else if (checkPath(siteSettings.trackPath, '/track')) {
+        setCurrentView('track');
+      } else if (checkPath(siteSettings.adminPath, '/admin')) {
+        setCurrentView('admin');
+        setIsAdminUnlocked(true);
+        localStorage.setItem('db_admin_unlocked', 'true');
+      } else if (path === '/' || hash === '' || checkPath(siteSettings.homePath, '/')) {
+        setCurrentView('home');
+      }
+    };
+
+    handleUrlChange();
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
+  }, [siteSettings]);
+
+  useEffect(() => {
+    if (siteSettings.faviconUrl) {
+      let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = siteSettings.faviconUrl;
+    }
+  }, [siteSettings.faviconUrl]);
+
+  useEffect(() => {
+    if (siteSettings.storeName) {
+      document.title = siteSettings.storeName;
+    }
+  }, [siteSettings.storeName]);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortOption, setSortOption] = useState<string>('default');
-  const [selectedZone, setSelectedZone] = useState<string>('baisa');
+  const [selectedZone, setSelectedZone] = useState<string>('');
   const [isSidebarCartOpen, setIsSidebarCartOpen] = useState<boolean>(false);
   const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [showAllTestimonials, setShowAllTestimonials] = useState<boolean>(false);
 
   const [productsList, setProductsList] = useState<Product[]>(() => {
     try {
@@ -52,7 +209,13 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           const validated = parsed.filter(p => p && typeof p === 'object' && p.id && p.arabicName && p.price && p.image);
-          if (validated.length > 0) return validated;
+          const seenIds = new Set();
+          const uniqueValidated = validated.filter(p => {
+            if (seenIds.has(p.id)) return false;
+            seenIds.add(p.id);
+            return true;
+          });
+          if (uniqueValidated.length > 0) return uniqueValidated;
         }
       }
       return PRODUCTS;
@@ -70,6 +233,12 @@ export default function App() {
     setIsAdminUnlocked(true);
     localStorage.setItem('db_admin_unlocked', 'true');
     triggerToast('🎉 تم تفعيل لوحة التحكم السرية للمدير بنجاح! يمكنك تصفحها الآن من قائمة التنقل بالأعلى.', 'success');
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminUnlocked(false);
+    localStorage.removeItem('db_admin_unlocked');
+    handleSetView('home');
   };
 
   const [footerClicks, setFooterClicks] = useState(0);
@@ -90,6 +259,81 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'info'>('success');
 
+  const triggerToast = (msg: string, type: 'success' | 'info' = 'success') => {
+    setToastMessage(msg);
+    setToastType(type);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+  };
+
+  const saveToLocalStorage = (key: string, value: string) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e: any) {
+      if (e.name === 'QuotaExceededError' || e.code === 22 || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+        console.warn(`LocalStorage quota full when setting ${key}. Performing cleanup...`);
+        try {
+          const keysToRemove: string[] = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && !k.startsWith('db_')) {
+              keysToRemove.push(k);
+            }
+          }
+          keysToRemove.forEach(k => {
+            localStorage.removeItem(k);
+          });
+          
+          localStorage.setItem(key, value);
+          console.log(`Saved ${key} successfully after cleanup.`);
+          return;
+        } catch (retryError) {
+          console.error(`Cleanup did not resolve quota issue for ${key}:`, retryError);
+        }
+        
+        // Emergency fallback for site settings: clear heavy base64 banners to salvage settings text
+        if (key === 'db_site_settings') {
+          try {
+            const parsed = JSON.parse(value);
+            if (parsed.heroBannerUrl && parsed.heroBannerUrl.startsWith('data:')) {
+              parsed.heroBannerUrl = "";
+            }
+            if (parsed.heroBannerMobileUrl && parsed.heroBannerMobileUrl.startsWith('data:')) {
+              parsed.heroBannerMobileUrl = "";
+            }
+            localStorage.setItem(key, JSON.stringify(parsed));
+            triggerToast('⚠️ الذاكرة ممتلئة. تم حفظ الإعدادات بنجاح، ولكن تم إيقاف صور البانر الكبيرة لتفادي مشكلة المساحة. يرجى استخدام صور أصغر.', 'info');
+            return;
+          } catch (emergencyErr) {
+            console.error("Emergency settings save failed:", emergencyErr);
+          }
+        }
+        triggerToast('⚠️ عذراً، لم نتمكن من حفظ البيانات لامتلاء ذاكرة التخزين المحلية.', 'info');
+      } else {
+        console.error(`Failed to execute setItem for key "${key}":`, e);
+      }
+    }
+  };
+
+  // Perform a cleanup of external/stale localStorage keys on startup to ensure maximum quota
+  useEffect(() => {
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && !k.startsWith('db_')) {
+          keysToRemove.push(k);
+        }
+      }
+      keysToRemove.forEach(k => {
+        localStorage.removeItem(k);
+      });
+    } catch (e) {
+      console.error("Startup cache cleanup failed:", e);
+    }
+  }, []);
+
   // Local storage lists for persistence
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
@@ -98,7 +342,7 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           const lookup = getProductsLookup();
-          return parsed.map((item: any) => {
+          const restored = parsed.map((item: any) => {
             if (!item || typeof item !== 'object') return null;
             let prod: Product | null = null;
             const prodId = item.productId || (item.product && item.product.id);
@@ -111,6 +355,17 @@ export default function App() {
               quantity: typeof item.quantity === 'number' ? item.quantity : 1
             };
           }).filter((item): item is CartItem => item !== null);
+
+          // Deduplicate by product ID
+          const seenProductIds = new Set();
+          const uniqueCartItems = restored.filter((item) => {
+            if (seenProductIds.has(item.product.id)) {
+              return false;
+            }
+            seenProductIds.add(item.product.id);
+            return true;
+          });
+          return uniqueCartItems;
         }
       }
       return [];
@@ -164,7 +419,7 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           const lookup = getProductsLookup();
-          return parsed.map((order: any) => {
+          const restored = parsed.map((order: any) => {
             if (!order || typeof order !== 'object' || !order.id || !Array.isArray(order.items)) return null;
             const restoredItems = order.items.map((item: any) => {
               if (!item || typeof item !== 'object') return null;
@@ -200,6 +455,17 @@ export default function App() {
               items: restoredItems
             };
           }).filter((order: any): order is Order => order !== null);
+
+          // Deduplicate by order ID
+          const seenOrderIds = new Set();
+          const uniqueOrders = restored.filter((order) => {
+            if (seenOrderIds.has(order.id)) {
+              return false;
+            }
+            seenOrderIds.add(order.id);
+            return true;
+          });
+          return uniqueOrders;
         }
       }
     } catch (e) {
@@ -229,60 +495,43 @@ export default function App() {
 
   // --- PERSISTENCE SYNCS ---
   useEffect(() => {
-    try {
-      // Stripping heavy base64 product images when saving cart to avoid localStorage quota issues
-      const minimizedCart = cartItems.map(item => ({
-        productId: item.product.id,
-        quantity: item.quantity
-      }));
-      localStorage.setItem('db_cart', JSON.stringify(minimizedCart));
-    } catch (e) {
-      console.error("Failed to save db_cart to localStorage:", e);
-    }
+    // Stripping heavy base64 product images when saving cart to avoid localStorage quota issues
+    const minimizedCart = cartItems.map(item => ({
+      productId: item.product.id,
+      quantity: item.quantity
+    }));
+    saveToLocalStorage('db_cart', JSON.stringify(minimizedCart));
   }, [cartItems]);
 
   useEffect(() => {
-    try {
-      // Stripping heavy base64 product images when saving orders to avoid localStorage quota issues
-      const minimizedOrders = orders.map(order => ({
-        ...order,
-        items: order.items.map(item => ({
-          productId: item.product.id,
-          product: {
-            id: item.product.id,
-            name: item.product.name,
-            arabicName: item.product.arabicName,
-            price: item.product.price,
-            image: "", // Remove massive image data url, will be resolved from lookup cache on load
-            category: item.product.category,
-            rating: item.product.rating,
-            prepTime: item.product.prepTime,
-            ingredients: item.product.ingredients || []
-          },
-          quantity: item.quantity
-        }))
-      }));
-      localStorage.setItem('db_orders', JSON.stringify(minimizedOrders));
-    } catch (e) {
-      console.error("Failed to save db_orders to localStorage:", e);
-    }
+    // Stripping heavy base64 product images when saving orders to avoid localStorage quota issues
+    const minimizedOrders = orders.map(order => ({
+      ...order,
+      items: order.items.map(item => ({
+        productId: item.product.id,
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          arabicName: item.product.arabicName,
+          price: item.product.price,
+          image: "", // Remove massive image data url, will be resolved from lookup cache on load
+          category: item.product.category,
+          rating: item.product.rating,
+          prepTime: item.product.prepTime,
+          ingredients: item.product.ingredients || []
+        },
+        quantity: item.quantity
+      }))
+    }));
+    saveToLocalStorage('db_orders', JSON.stringify(minimizedOrders));
   }, [orders]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('db_coupons', JSON.stringify(coupons));
-    } catch (e) {
-      console.error("Failed to save db_coupons to localStorage:", e);
-    }
+    saveToLocalStorage('db_coupons', JSON.stringify(coupons));
   }, [coupons]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('db_products', JSON.stringify(productsList));
-    } catch (e) {
-      console.error("Failed to save db_products to localStorage:", e);
-      triggerToast('⚠️ عذراً، لم نتمكن من الحفظ لامتلاء ذاكرة التخزين المحلية. الرجاء استخدام صورة أصغر أو رابط صورة مباشر.', 'info');
-    }
+    saveToLocalStorage('db_products', JSON.stringify(productsList));
   }, [productsList]);
 
   // Scroll to the top of the page on view/page transition (safely handled)
@@ -297,13 +546,6 @@ export default function App() {
   }, [currentView]);
 
   // --- ACTIONS SYSTEM ---
-  const triggerToast = (msg: string, type: 'success' | 'info' = 'success') => {
-    setToastMessage(msg);
-    setToastType(type);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
-  };
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -373,6 +615,23 @@ export default function App() {
     triggerToast(`تم تحديث حالة الطلب ${orderId} إلى مرحلة جديدة.`, 'success');
   };
 
+  const handleCancelOrder = (orderId: string) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, status: 'cancelled' } : o))
+    );
+    triggerToast(`تم إلغاء الطلب ${orderId} بنجاح. ❌`, 'info');
+  };
+
+  const handleDeleteOrder = (orderId: string) => {
+    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    triggerToast(`تم حذف الطلب ${orderId} نهائياً. 🗑️`, 'success');
+  };
+
+  const handleClearAllOrders = () => {
+    setOrders([]);
+    triggerToast(`تم حذف جميع الطلبيات السابقة بالكامل بنجاح. 🧹`, 'success');
+  };
+
   // PLACING REAL ORDER (WHATSAPP DEEP-LINK INTERACTION WITH EXCELLENT DESIGN CONVERSIONS)
   const handlePlaceOrder = (orderData: {
     fullName: string;
@@ -385,7 +644,7 @@ export default function App() {
   }) => {
     const subtotal = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
     const selectedZoneDetail = DELIVERY_ZONES.find((z) => z.id === selectedZone);
-    const rawDeliveryCost = selectedZoneDetail ? selectedZoneDetail.cost : 5;
+    const rawDeliveryCost = selectedZoneDetail ? selectedZoneDetail.cost : 0;
     const isFreeDelivery = subtotal >= 100;
     const deliveryCost = isFreeDelivery ? 0 : rawDeliveryCost;
     const total = subtotal + deliveryCost - orderData.discountAmount;
@@ -396,33 +655,13 @@ export default function App() {
     // Auto-prepend the selected district/area name to the residential address
     let formattedAddress = orderData.address;
     if (orderData.deliveryArea && !orderData.address.includes(orderData.deliveryArea)) {
-      formattedAddress = `${orderData.deliveryArea}، ${orderData.address}`;
+      formattedAddress = orderData.address.trim() ? `${orderData.deliveryArea}، ${orderData.address}` : orderData.deliveryArea;
     }
 
-    const newOrder: Order = {
-      id: randomId,
-      fullName: orderData.fullName,
-      phone: orderData.phone,
-      address: formattedAddress,
-      notes: orderData.notes,
-      deliveryArea: orderData.deliveryArea,
-      deliveryCost,
-      items: [...cartItems],
-      subtotal,
-      total,
-      status: 'pending',
-      date: new Date().toISOString().replace('T', ' ').substring(0, 16),
-      couponApplied: orderData.couponApplied,
-      discountAmount: orderData.discountAmount,
-    };
-
-    // Save order in state lists (pre-pended so latest is always visible)
-    setOrders((prev) => [newOrder, ...prev]);
-
     // Format WhatsApp invoice text
-    const storeWhatsAppNumber = '212705908383';
+    const storeWhatsAppNumber = siteSettings.whatsappNumber;
     
-    let whatsappText = `*طلب جديد من متجر Douaa & Basma*\n\n`;
+    let whatsappText = `*${siteSettings.whatsappMessageTemplate}*\n\n`;
     whatsappText += `*رقم التتبع للطلب:* \`#${randomId}\`\n`;
     whatsappText += `*الاسم الكامل:* ${orderData.fullName}\n`;
     whatsappText += `*الهاتف:* ${orderData.phone}\n`;
@@ -451,34 +690,38 @@ export default function App() {
     }
     whatsappText += `- كلفة التوصيل: ${isFreeDelivery ? 'توصيل مجاني' : `${deliveryCost} DH`}\n`;
     whatsappText += `*المجموع الإجمالي لتأديته عند الاستلام:* *${total} DH*\n\n`;
-    whatsappText += `شكرًا جزيلاً لاختياركم *Douaa & Basma* ! طري ومصنوع بكل حب وعناية منزلية فخمة`;
+    whatsappText += `شكرًا جزيلاً لاختياركم *${siteSettings.storeName}* ! طري ومصنوع بكل حب وعناية منزلية فخمة`;
 
     const encodedText = encodeURIComponent(whatsappText);
     const whatsappUrl = `https://wa.me/${storeWhatsAppNumber}?text=${encodedText}`;
 
-    // Attempt to open WhatsApp in a new tab immediately (synchronously under the click handler context)
-    // to prevent the browser's popup blocker from blocking it.
-    let opened = false;
-    try {
-      const newWindow = window.open(whatsappUrl, '_blank');
-      if (newWindow && !newWindow.closed && typeof newWindow.closed !== 'undefined') {
-        opened = true;
-      }
-    } catch (e) {
-      console.error("Popup window open failed:", e);
-    }
+    const newOrder: Order = {
+      id: randomId,
+      fullName: orderData.fullName,
+      phone: orderData.phone,
+      address: formattedAddress,
+      notes: orderData.notes,
+      deliveryArea: orderData.deliveryArea,
+      deliveryCost,
+      items: [...cartItems],
+      subtotal,
+      total,
+      status: 'pending',
+      date: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      couponApplied: orderData.couponApplied,
+      discountAmount: orderData.discountAmount,
+      whatsappUrl,
+    };
 
-    // Fallback: If popup is blocked or fails to open, redirect the current window directly as it cannot be blocked.
-    if (!opened) {
-      window.location.href = whatsappUrl;
-    }
+    // Save order in state lists (pre-pended so latest is always visible)
+    setOrders((prev) => [newOrder, ...prev]);
 
-    triggerToast(`تـم تسجيل طلبيتك بنجاح! جاري توجيهك إلى واتساب لتأكيد الاستلام...`, 'success');
+    triggerToast(`تـم تسجيل طلبيتك بنجاح برقم التتبع #${randomId}! تم حفظ الطلب ومتابعته في لوحة التحكم.`, 'success');
 
     // Clear cart and switch view to the live order tracking page
     setCartItems([]);
     setOrderNotes('');
-    setCurrentView('track');
+    handleSetView('track');
   };
 
   // --- FILTERING AND SORTING Logic ---
@@ -487,12 +730,10 @@ export default function App() {
     const matchesCategory = activeCategory === 'all' || product.category === activeCategory;
     const arabicName = product.arabicName || '';
     const name = product.name || '';
-    const description = product.description || '';
     const query = searchQuery || '';
     const matchesSearch =
       arabicName.toLowerCase().includes(query.toLowerCase()) ||
-      name.toLowerCase().includes(query.toLowerCase()) ||
-      description.toLowerCase().includes(query.toLowerCase());
+      name.toLowerCase().includes(query.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -507,8 +748,75 @@ export default function App() {
     return 0; // default initial layout
   });
 
+  const renderTestimonialsSection = () => {
+    return (
+      <div className="bg-brand-purple/10 relative overflow-hidden py-16 dark:bg-neutral-950/60 font-sans">
+        <div className="absolute inset-0 arabesque-pattern opacity-6 pointer-events-none" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-align-start relative z-10 w-full">
+          <div className="text-center mb-12">
+            <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block mb-1">شاهد عظمة وثقة عشاقنا</span>
+            <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple flex items-center justify-center gap-1">
+              ماذا يقول زبائننا المخلصون؟
+            </h2>
+            <div className="w-24 h-0.5 bg-brand-gold mx-auto mt-3" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 justify-center">
+            {(showAllTestimonials ? TESTIMONIALS : TESTIMONIALS.slice(0, 3)).map((t) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+                key={t.id}
+                className="bg-white/80 dark:bg-neutral-900/80 p-6 md:p-8 rounded-3xl border border-brand-gold/15 hover:shadow-xl transition-shadow relative"
+              >
+                <span className="text-brand-gold text-2xl font-serif absolute top-3.5 left-4">“</span>
+                <div className="flex items-center gap-1 text-xs font-bold text-brand-gold mb-3" style={{ direction: 'rtl' }}>
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <span key={s}>★</span>
+                  ))}
+                </div>
+                
+                <p className="text-sm text-gray-700 italic leading-relaxed min-h-24">
+                  {t.comment}
+                </p>
+
+                <div className="border-t border-gray-100 pt-4 mt-4 flex items-center justify-between">
+                  <span className="font-bold text-royal-purple block text-sm">{t.name}</span>
+                  <span className="text-xs text-gray-400">{t.city} {t.date}</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <button
+              onClick={() => setShowAllTestimonials(!showAllTestimonials)}
+              className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white font-black rounded-2xl shadow-md shadow-brand-purple/10 active:scale-95 transition-all text-xs cursor-pointer"
+            >
+              {showAllTestimonials ? (
+                <>
+                  <span>مشاهدة أقل</span>
+                  <ChevronUp className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  <span>مشاهدة المزيد من التقييمات</span>
+                  <ChevronDown className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const totalCartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const selectedZoneCost = DELIVERY_ZONES.find((z) => z.id === selectedZone)?.cost ?? 5;
+  const selectedZoneCost = DELIVERY_ZONES.find((z) => z.id === selectedZone)?.cost ?? 0;
 
   return (
     <div className={`min-h-screen flex flex-col justify-between ${darkMode ? 'dark bg-neutral-900 text-white' : 'bg-brand-cream text-neutral-800'}`}>
@@ -536,7 +844,7 @@ export default function App() {
       <Header
         currentView={currentView}
         onSetView={(view) => {
-          setCurrentView(view);
+          handleSetView(view);
           setIsSidebarCartOpen(false); // Autoclose drawer on actions
         }}
         cartItems={cartItems}
@@ -546,6 +854,7 @@ export default function App() {
         onOpenCart={() => setIsSidebarCartOpen(true)}
         isAdminUnlocked={isAdminUnlocked}
         onUnlockAdmin={handleUnlockAdmin}
+        siteSettings={siteSettings}
       />
 
       {/* SIDEBAR CART DRAWER SCREEN */}
@@ -572,7 +881,7 @@ export default function App() {
               <div className="p-5 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="text-lg font-display font-black text-royal-purple inline-flex items-center gap-1.5">
                   <ShoppingCart className="w-5 h-5 text-brand-gold" />
-                  سلة المشتريات
+                  طلباتي
                 </h3>
                 <button
                   onClick={() => setIsSidebarCartOpen(false)}
@@ -591,8 +900,8 @@ export default function App() {
                     <p className="text-xs mt-1">دعنا نلقي نظرة على زعزع أو فلان كراميل!</p>
                   </div>
                 ) : (
-                  cartItems.map((item) => (
-                    <div key={item.product.id} className="p-3 bg-brand-cream rounded-2xl border border-gray-100 flex items-center gap-3 relative">
+                  cartItems.map((item, idx) => (
+                    <div key={`${item.product.id}-${idx}`} className="p-3 bg-brand-cream rounded-2xl border border-gray-100 flex items-center gap-3 relative">
                       <img
                         src={item.product.image}
                         alt={item.product.arabicName}
@@ -644,7 +953,7 @@ export default function App() {
                   </div>
 
                   <p className="text-[10px] text-gray-400 text-center mb-4 leading-normal">
-                    * ملاحظة: التوصيل مجاني تلقائياً للطلبات الأزيد من 100 DH.
+                    * ملاحظة: توصيل مجاني لبعض الأحياء وتلقائياً للطلبات الأزيد من 100 DH
                   </p>
 
                   <button
@@ -654,7 +963,7 @@ export default function App() {
                     }}
                     className="w-full py-3.5 bg-brand-purple hover:bg-brand-purple-light text-white font-bold rounded-xl text-center text-xs transition-transform cursor-pointer block"
                   >
-                    عرض تفاصيل السلة
+                    عرض تفاصيل الطلب
                   </button>
                 </div>
               )}
@@ -676,7 +985,8 @@ export default function App() {
                 const listElem = document.getElementById('products-listing-title');
                 if (listElem) listElem.scrollIntoView({ behavior: 'smooth' });
               }}
-              onExploreStory={() => setCurrentView('about')}
+              onExploreStory={() => handleSetView('about')}
+              siteSettings={siteSettings}
             />
 
             {/* FILTERING BAR & PRODUCTS GRID */}
@@ -689,7 +999,7 @@ export default function App() {
                     <Sparkles className="text-brand-gold animate-bounce" />
                     قائمة مشروباتنا وتحليّاتنا المدهشة
                   </h2>
-                  <p className="text-gray-500 text-sm mt-1">تصفح وجرب أفخر ما تحضره يدا دعاء وبسمة بمنازل الكوادر والشرفاء.</p>
+                  <p className="text-gray-500 text-sm mt-1">تصفح وجرب أفخر ما تحضره يدا دعاء وبسمة بالمنزل.</p>
                 </div>
 
                 {/* Search text inputs */}
@@ -699,7 +1009,7 @@ export default function App() {
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ابحث عن: زعزع، أفوكادو، فلان..."
+                    placeholder="ابحث عن: (زعزع، عصير الدراغون، عصير الأفوكادو، فلان فنزويلي،..."
                     className="w-full pr-10 pl-4 py-2.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs bg-white/70 backdrop-blur-md shadow-sm"
                   />
                   {searchQuery && (
@@ -753,10 +1063,12 @@ export default function App() {
 
               {/* Products listing grid with fluid responsive metrics */}
               {sortedProducts.length === 0 ? (
-                <div className="text-center py-20 text-gray-500 bg-white rounded-3xl border border-gray-100">
-                  <span className="text-4xl block mb-2">🔎</span>
-                  <h3 className="font-bold text-royal-purple text-base">لم نجد أي منتج يطابق بحثك حالياً</h3>
-                  <p className="text-xs text-gray-400 mt-1">تأكد من كتابة الكلمات باللغة العربية أو تصفح الأقسام مباشرة.</p>
+                <div className="text-center py-20 px-6 bg-white rounded-3xl border border-gray-100/80 shadow-sm max-w-lg mx-auto flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center mb-5 border-2 border-brand-purple/20 shadow-inner group">
+                    <Search className="w-8 h-8 text-royal-purple" />
+                  </div>
+                  <h3 className="font-display font-bold text-royal-purple text-lg mb-2">لم نجد أي منتج يطابق بحثك حالياً</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed font-semibold">لم يتم إضافة أي منتج بهذا التصنيف في الوقت الحالي ونعمل على ذلك، قريبا...</p>
                 </div>
               ) : (
                 <motion.div
@@ -779,56 +1091,29 @@ export default function App() {
             </div>
 
             {/* WHY CHOOSE US REVIEWS BRIDGES */}
-            <div className="bg-brand-purple/10 relative overflow-hidden py-16 dark:bg-neutral-950/60 font-sans">
-              <div className="absolute inset-0 arabesque-pattern opacity-6 pointer-events-none" />
-              
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-align-start relative z-10">
-                <div className="text-center mb-12">
-                  <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block mb-1">شاهد عظمة وثقة عشاقنا</span>
-                  <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple flex items-center justify-center gap-1">
-                    ماذا يقول زبائننا المخلصون؟
-                  </h2>
-                  <div className="w-24 h-0.5 bg-brand-gold mx-auto mt-3" />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                  {TESTIMONIALS.map((t) => (
-                    <div
-                      key={t.id}
-                      className="bg-white/80 dark:bg-neutral-900/80 p-6 md:p-8 rounded-3xl border border-brand-gold/15 hover:shadow-xl transition-shadow relative"
-                    >
-                      <span className="text-brand-gold text-2xl font-serif absolute top-3.5 left-4">“</span>
-                      <div className="flex items-center gap-1 text-xs font-bold text-brand-gold mb-3" style={{ direction: 'rtl' }}>
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <span key={s}>★</span>
-                        ))}
-                      </div>
-                      
-                      <p className="text-sm text-gray-700 italic leading-relaxed min-h-24">
-                        {t.comment}
-                      </p>
-
-                      <div className="border-t border-gray-100 pt-4 mt-4 flex items-center justify-between">
-                        <span className="font-bold text-royal-purple block text-sm">{t.name}</span>
-                        <span className="text-xs text-gray-400">{t.city} -- {t.date}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {renderTestimonialsSection()}
 
           </div>
         )}
 
         {/* VIEW 2: ABOUT US (من نحن) */}
-        {currentView === 'about' && <InfoPages activeTab="about" />}
+        {currentView === 'about' && (
+          <div className="flex flex-col gap-0">
+            <InfoPages activeTab="about" siteSettings={siteSettings} />
+            {renderTestimonialsSection()}
+          </div>
+        )}
 
         {/* VIEW 3: SHIPPING CONDITIONS (التوصيل) */}
-        {currentView === 'delivery' && <InfoPages activeTab="delivery" />}
+        {currentView === 'delivery' && <InfoPages activeTab="delivery" siteSettings={siteSettings} />}
 
         {/* VIEW 4: CONTACT INFOS (اتصل بنا) */}
-        {currentView === 'contact' && <InfoPages activeTab="contact" />}
+        {currentView === 'contact' && (
+          <div className="flex flex-col gap-0">
+            <InfoPages activeTab="contact" siteSettings={siteSettings} />
+            {renderTestimonialsSection()}
+          </div>
+        )}
 
         {/* VIEW 5: CART SUMMARY DETAIL (صفحة السلة بالتفصيل) */}
         {currentView === 'cart' && (
@@ -836,8 +1121,8 @@ export default function App() {
             cartItems={cartItems}
             onUpdateQuantity={handleUpdateCartQuantity}
             onRemoveItem={handleRemoveFromCart}
-            onContinueShopping={() => setCurrentView('home')}
-            onProceedToCheckout={() => setCurrentView('checkout')}
+            onContinueShopping={() => handleSetView('home')}
+            onProceedToCheckout={() => handleSetView('checkout')}
             deliveryOption={selectedZoneCost}
             notes={orderNotes}
             onNotesChange={setOrderNotes}
@@ -851,7 +1136,7 @@ export default function App() {
             subtotal={cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0)}
             deliveryCost={selectedZoneCost}
             onPlaceOrder={handlePlaceOrder}
-            onBackToCart={() => setCurrentView('cart')}
+            onBackToCart={() => handleSetView('cart')}
             selectedZone={selectedZone}
             onZoneChange={handleZoneChange}
             coupons={coupons}
@@ -863,7 +1148,8 @@ export default function App() {
         {currentView === 'track' && (
           <Tracking
             orders={orders}
-            onViewStore={() => setCurrentView('home')}
+            onViewStore={() => handleSetView('home')}
+            siteSettings={siteSettings}
           />
         )}
 
@@ -872,11 +1158,17 @@ export default function App() {
           <Admin
             orders={orders}
             onUpdateOrderStatus={handleUpdateOrderStatus}
+            onCancelOrder={handleCancelOrder}
+            onDeleteOrder={handleDeleteOrder}
+            onClearAllOrders={handleClearAllOrders}
             coupons={coupons}
             onAddCoupon={handleAddCoupon}
             onDeleteCoupon={handleDeleteCoupon}
             products={productsList}
             onUpdateProducts={setProductsList}
+            siteSettings={siteSettings}
+            onUpdateSiteSettings={handleUpdateSiteSettings}
+            onLogout={handleAdminLogout}
           />
         )}
 
@@ -894,35 +1186,40 @@ export default function App() {
       <footer className="bg-royal-purple text-white relative overflow-hidden pt-12 pb-8 border-t border-brand-gold/30">
         <div className="absolute inset-0 arabesque-pattern opacity-5 pointer-events-none" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 text-align-start font-sans">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center font-sans">
           
           {/* Logo segment */}
-          <div className="md:col-span-8 space-y-4">
-            <h3 className="text-xl font-display font-black text-brand-gold flex items-center gap-1.5">
-              Douaa & Basma
-            </h3>
-            <p className="text-xs text-gray-300 leading-relaxed max-w-sm">
-              أرقى مشروع محلي مغربي لتقديم العصائر و التحليات المنزلية. و نسعى دائماً لترك بصمة من المتعة والفرح بمناسباتكم الخاصة والعامة.
-            </p>
-            
-            {/* Links map segment moved here */}
-            <div className="pt-2">
-              <h4 className="font-bold text-gray-100 text-sm mb-4 border-r-2 border-brand-gold pr-2">تصفح المتجر من خلال</h4>
-              <ul className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-gray-300 max-w-sm">
-                <li><button onClick={() => setCurrentView('home')} className="hover:text-brand-gold transition-colors cursor-pointer text-right w-full">الرئيسية وقائمة المنتجات</button></li>
-                <li><button onClick={() => setCurrentView('about')} className="hover:text-brand-gold transition-colors cursor-pointer text-right w-full">من نحن وقصتنا</button></li>
-                <li><button onClick={() => setCurrentView('delivery')} className="hover:text-brand-gold transition-colors cursor-pointer text-right w-full">معلومات التوصيل والمدن</button></li>
-                <li><button onClick={() => setCurrentView('contact')} className="hover:text-brand-gold transition-colors cursor-pointer text-right w-full">للاتصال بنا وطلب حجز</button></li>
-              </ul>
+          <div className="space-y-4 flex flex-col items-center justify-center">
+            <div className="flex items-center justify-center gap-1.5">
+              <span 
+                onClick={() => handleSetView('home')}
+                className="text-2xl md:text-3xl font-display font-black text-brand-gold cursor-pointer transition-all duration-300 hover:scale-105 hover:text-brand-gold-light drop-shadow-sm select-none"
+              >
+                {siteSettings?.storeName || "Douaa & Basma"}
+              </span>
             </div>
+            <p className="text-xs text-gray-300 leading-relaxed max-w-sm mx-auto">
+              {siteSettings?.storeDescription || "أرقى مشروع محلي مغربي لتقديم العصائر و التحليات المنزلية. و نسعى دائماً لترك بصمة من المتعة والفرح بمناسباتكم الخاصة والعامة."}
+            </p>
           </div>
 
-          {/* Social channels icons row moved here */}
-          <div className="md:col-span-4">
-            <h4 className="font-bold text-gray-100 text-sm mb-4 border-r-2 border-brand-gold pr-2">مواقع التواصل الاجتماعي</h4>
-            <div className="flex gap-2.5 pt-1">
+          {/* Links map segment */}
+          <div className="flex flex-col items-center justify-center">
+            <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 inline-block">تصفح المتجر من خلال</h4>
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-gray-300 w-full max-w-sm">
+              <li><button onClick={() => handleSetView('home')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">الرئيسية وقائمة المنتجات</button></li>
+              <li><button onClick={() => handleSetView('about')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">من نحن وقصتنا</button></li>
+              <li><button onClick={() => handleSetView('delivery')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">معلومات التوصيل والمدن</button></li>
+              <li><button onClick={() => handleSetView('contact')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">للاتصال بنا وطلب حجز</button></li>
+            </ul>
+          </div>
+
+          {/* Social channels icons row */}
+          <div className="flex flex-col items-center justify-center">
+            <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 inline-block">مواقع التواصل الاجتماعي</h4>
+            <div className="flex gap-2.5 pt-1 justify-center">
               <a
-                href="https://wa.me/212705908383"
+                href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center transition-transform hover:scale-105"
@@ -932,7 +1229,7 @@ export default function App() {
               </a>
 
               <a
-                href="https://instagram.com/douaabasma_1"
+                href={siteSettings?.instagramUrl || "https://instagram.com/douaabasma_1"}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 text-white flex items-center justify-center transition-transform hover:scale-105"
@@ -942,7 +1239,7 @@ export default function App() {
               </a>
 
               <a
-                href="https://m.facebook.com/douaabasma01/"
+                href={siteSettings?.facebookUrl || "https://m.facebook.com/douaabasma01/"}
                 target="_blank"
                 rel="noreferrer"
                 className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition-transform hover:scale-105"
@@ -957,9 +1254,11 @@ export default function App() {
 
         {/* Copy credits */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 border-t border-brand-gold/10 pt-6 mt-8 text-center text-[11px] text-gray-400">
-          <p>© {new Date().getFullYear()} جميع الحقوق محفوظة لعلامة <span className="cursor-pointer hover:text-brand-gold duration-200" onClick={handleFooterSecretClick}>Douaa & Basma</span></p>
+          <p>© {new Date().getFullYear()} {siteSettings?.footerCredits || "جميع الحقوق محفوظة لعلامة"} <span className="cursor-pointer hover:text-brand-gold duration-200 font-bold" onClick={handleFooterSecretClick}>{siteSettings?.storeName || "Douaa & Basma"}</span></p>
         </div>
       </footer>
+
+
 
     </div>
   );

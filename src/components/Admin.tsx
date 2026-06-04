@@ -153,6 +153,50 @@ const generateWhatsAppConfirmUrl = (order: Order, storeName: string) => {
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`;
 };
 
+const cleanAndConvertImageUrl = (url: string): string => {
+  if (!url) return '';
+  let cleaned = url.trim();
+
+  // 1. Google Drive Sharing Link conversions
+  // Examples:
+  // - https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  // - https://drive.google.com/open?id=FILE_ID
+  // - https://docs.google.com/file/d/FILE_ID/edit
+  // - https://drive.google.com/uc?id=FILE_ID
+  const gdRegex1 = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+  const gdRegex2 = /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/;
+  const gdRegex3 = /docs\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+  const gdRegex4 = /drive\.google\.com\/uc\?.*?id=([a-zA-Z0-9_-]+)/;
+
+  let fileId = '';
+  if (gdRegex1.test(cleaned)) {
+    fileId = cleaned.match(gdRegex1)?.[1] || '';
+  } else if (gdRegex2.test(cleaned)) {
+    fileId = cleaned.match(gdRegex2)?.[1] || '';
+  } else if (gdRegex3.test(cleaned)) {
+    fileId = cleaned.match(gdRegex3)?.[1] || '';
+  } else if (gdRegex4.test(cleaned)) {
+    fileId = cleaned.match(gdRegex4)?.[1] || '';
+  }
+
+  if (fileId) {
+    return `https://lh3.googleusercontent.com/d/${fileId}`;
+  }
+
+  // 2. Dropbox sharing link conversions
+  // Change dl=0 to raw=1
+  if (cleaned.includes('dropbox.com') && cleaned.includes('dl=0')) {
+    cleaned = cleaned.replace('dl=0', 'raw=1');
+  }
+
+  return cleaned;
+};
+
+const isDiscordUrl = (url: string): boolean => {
+  if (!url) return false;
+  return url.includes('discordapp.com') || url.includes('discordapp.net');
+};
+
 const generateWhatsAppStatusUpdateUrl = (order: Order, status: Order['status'], storeName: string) => {
   // Clean phone number
   let rawPhone = order.phone || "";
@@ -1456,101 +1500,61 @@ export const Admin: React.FC<AdminProps> = ({
                     </div>
 
                      <div>
-                      <label className="block mb-1.5 text-gray-600">صورة المنتج (ارفع الصورة من معرض جهازك) *</label>
+                      <label className="block mb-1 text-gray-600 font-sans font-bold">رابط صورة المنتج (URL) *</label>
                       
                       <div className="space-y-3 font-sans">
-                        {/* Hidden input file tag */}
                         <input
-                          type="file"
-                          id="prod-image-file-input"
-                          accept="image/*"
-                          onChange={handleImageFileChange}
-                          className="hidden"
+                          type="text"
+                          value={prodImage}
+                          onChange={(e) => setProdImage(cleanAndConvertImageUrl(e.target.value))}
+                          placeholder="أدخل رابط الصورة المباشر للمنتج..."
+                          className="w-full p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple text-xs font-sans font-mono"
                         />
 
-                        {prodImage ? (
-                          // Active Image uploaded preview container
+                        {isDiscordUrl(prodImage) && (
+                          <div className="text-[11px] text-rose-700 bg-rose-50 border border-rose-100 p-2.5 rounded-xl font-sans font-bold leading-relaxed">
+                            ⚠️ تنبيه هام: روابط صور Discord تنتهي بعد 24 ساعة فقط ولن تعود صالحة! نوصيك بشدة بلصق رابط دائم ومستقر من مركز رفع مجاني ومستمر مثل <a href="https://postimages.org" target="_blank" rel="noreferrer" className="underline text-blue-600 font-bold">Postimages</a> أو <a href="https://imgbb.com" target="_blank" rel="noreferrer" className="underline text-blue-600 font-bold">imgbb</a> لضمان ظهور المنتجات للزبائن دوماً.
+                          </div>
+                        )}
+
+                        <div className="text-[10px] text-gray-500 bg-neutral-50 p-2.5 rounded-xl border border-gray-150 space-y-1 font-sans leading-relaxed text-right">
+                          <p className="font-semibold text-brand-purple">💡 نصائح لضمان عمل الصور بشكل دائم ومستقر في المتصفح:</p>
+                          <ul className="list-disc list-inside space-y-1 text-gray-650 pr-1">
+                            <li><strong>Google Drive</strong>: الصق رابط مشاركة الملف العادي وسنقوم بتحويله لك تلقائياً وبدقة ليعمل مباشرة!</li>
+                            <li><strong>Dropbox</strong>: يتم تعديل روابط دروببوكس تلقائياً لتعود كروابط مباشرة (تحتوي على <code>raw=1</code>).</li>
+                            <li>تأكد دائماً أن الرابط ينتهي بامتداد صورة حقيقي مثل <code>.png</code> أو <code>.jpg</code> أو <code>.webp</code> للمواقع الأخرى.</li>
+                          </ul>
+                        </div>
+
+                        {prodImage && (
                           <div className="relative border border-brand-gold/20 rounded-2xl p-3 bg-brand-cream/40 flex items-center gap-4">
                             <img
                               src={prodImage}
                               alt="معاينة الصورة"
                               referrerPolicy="no-referrer"
                               className="w-20 h-20 rounded-xl object-cover border border-gray-200 shrink-0 bg-white"
+                              onError={(e) => {
+                                (e.target as any).src = 'https://placehold.co/400x400?text=رابط+غير+صالح';
+                              }}
                             />
                             <div className="flex-1 min-w-0">
                               <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 mb-1">
-                                <Check className="w-3 h-3" /> تم تحميل الصورة بنجاح من المعرض
+                                <Check className="w-3 h-3" /> معاينة الصورة من الرابط
                               </span>
                               <p className="text-[10px] text-gray-400 truncate max-w-xs font-mono font-normal">
-                                {prodImage.startsWith('data:') ? 'صورة مرفوعة (متضمنة محلياً في المتجر)' : prodImage}
+                                {prodImage}
                               </p>
                               
                               <div className="flex gap-2 mt-2">
                                 <button
                                   type="button"
-                                  onClick={() => document.getElementById('prod-image-file-input')?.click()}
-                                  className="px-3 py-1 bg-white hover:bg-neutral-50 text-gray-700 border border-gray-200 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
-                                >
-                                  تغيير الصورة 📁
-                                </button>
-                                <button
-                                  type="button"
                                   onClick={() => setProdImage('')}
                                   className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
                                 >
-                                  إزالة 🗑️
+                                  إزالة الرابط 🗑️
                                 </button>
                               </div>
                             </div>
-                          </div>
-                        ) : (
-                          // Drag & Drop styled area box
-                          <div
-                            onDragOver={handleDragOver}
-                            onDragLeave={handleDragLeave}
-                            onDrop={handleDrop}
-                            onClick={() => document.getElementById('prod-image-file-input')?.click()}
-                            className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all duration-300 relative ${
-                              isDragging 
-                                ? 'border-brand-purple bg-brand-purple-soft/20 scale-[0.99]' 
-                                : 'border-neutral-200 hover:border-brand-purple/45 bg-brand-cream/10 hover:bg-brand-cream/20'
-                            }`}
-                          >
-                            <div className="flex flex-col items-center justify-center space-y-2">
-                              <div className="w-10 h-10 bg-brand-purple-soft text-brand-purple rounded-xl flex items-center justify-center">
-                                <Image className="w-5 h-5" />
-                              </div>
-                              <p className="text-gray-700 font-bold text-xs">
-                                اضغط هنا لاختيار صورة من معرض جهازك 📸
-                              </p>
-                              <p className="text-gray-400 text-[10px] font-normal leading-normal">
-                                أو قم بسحب وإلقاء الصورة المفرومة هنا (PNG, JPG, WebP)
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Optional Toggle to enter a URL for flexibility */}
-                        <div className="text-left">
-                          <button
-                            type="button"
-                            onClick={() => setShowUrlField(!showUrlField)}
-                            className="text-[11px] text-brand-purple hover:underline font-semibold cursor-pointer"
-                          >
-                            {showUrlField ? '◀ إخفاء خيارات الروابط اليدوية' : '◀ أو ضع رابط صورة مباشر يدوياً (خيارات متقدمة)'}
-                          </button>
-                        </div>
-
-                        {showUrlField && (
-                          <div className="p-3 bg-neutral-50 rounded-xl border border-gray-150 space-y-1.5 duration-200">
-                            <label className="block text-[10px] text-gray-500 font-bold">أدخل أي رابط صورة خارجي (Unsplash أو غيره):</label>
-                            <input
-                              type="text"
-                              value={prodImage}
-                              onChange={(e) => setProdImage(e.target.value)}
-                              placeholder="ضع هنا رابط الصورة المباشر لمتصفح الويب..."
-                              className="w-full p-2.5 rounded-lg border border-gray-200 outline-none focus:border-brand-purple text-xs font-mono select-all"
-                            />
                           </div>
                         )}
                       </div>
@@ -1931,32 +1935,15 @@ export const Admin: React.FC<AdminProps> = ({
                       <input 
                         type="text"
                         value={siteSettings?.logoUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, logoUrl: e.target.value })}
-                        placeholder="رابط رابط الشعار..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
+                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, logoUrl: cleanAndConvertImageUrl(e.target.value) })}
+                        placeholder="أدخل رابط شعار الموقع الرئيسي المباشر..."
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
                       />
-                      <div className="relative">
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            compressImageFile(file, 256, 256, 0.8, (url) => {
-                              onUpdateSiteSettings({ ...siteSettings, logoUrl: url });
-                            });
-                          }}
-                          className="hidden"
-                          id="settings-logo-upload"
-                        />
-                        <label 
-                          htmlFor="settings-logo-upload"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-[10px] font-bold text-neutral-700 cursor-pointer border border-neutral-200 transition-colors"
-                        >
-                          <Image className="w-3.5 h-3.5" />
-                          <span>رفع لوجو بدون خلفية من جهازك</span>
-                        </label>
-                      </div>
+                      {isDiscordUrl(siteSettings?.logoUrl || '') && (
+                        <p className="text-[10px] text-rose-600 font-bold font-sans">
+                          ⚠️ الرابط المكتوب معرّض للاختفاء (Discord)! يرجى استبداله برابط دائم.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1977,32 +1964,15 @@ export const Admin: React.FC<AdminProps> = ({
                       <input 
                         type="text"
                         value={siteSettings?.faviconUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, faviconUrl: e.target.value })}
-                        placeholder="رابط أيقونة favicon..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
+                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, faviconUrl: cleanAndConvertImageUrl(e.target.value) })}
+                        placeholder="أدخل رابط أيقونة favicon المباشر..."
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
                       />
-                      <div className="relative">
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            compressImageFile(file, 128, 128, 0.8, (url) => {
-                              onUpdateSiteSettings({ ...siteSettings, faviconUrl: url });
-                            });
-                          }}
-                          className="hidden"
-                          id="settings-favicon-upload"
-                        />
-                        <label 
-                          htmlFor="settings-favicon-upload"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-[10px] font-bold text-neutral-700 cursor-pointer border border-neutral-200 transition-colors"
-                        >
-                          <Image className="w-3.5 h-3.5" />
-                          <span>رفع أيقونة المتصفح من جهازك</span>
-                        </label>
-                      </div>
+                      {isDiscordUrl(siteSettings?.faviconUrl || '') && (
+                        <p className="text-[10px] text-rose-600 font-bold font-sans">
+                          ⚠️ الرابط المكتوب معرّض للاختفاء (Discord)! يرجى استبداله برابط دائم.
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2019,32 +1989,15 @@ export const Admin: React.FC<AdminProps> = ({
                       <input 
                         type="text"
                         value={siteSettings?.heroBannerUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroBannerUrl: e.target.value })}
-                        placeholder="رابط صورة خلفية الكمبيوتر..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white"
+                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroBannerUrl: cleanAndConvertImageUrl(e.target.value) })}
+                        placeholder="أدخل رابط صورة بانر الكمبيوتر المباشر..."
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
                       />
-                      <div className="relative">
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            compressImageFile(file, 1024, 768, 0.65, (url) => {
-                              onUpdateSiteSettings({ ...siteSettings, heroBannerUrl: url });
-                            });
-                          }}
-                          className="hidden"
-                          id="settings-hero-desktop-upload"
-                        />
-                        <label 
-                          htmlFor="settings-hero-desktop-upload"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-[10px] font-bold text-neutral-700 cursor-pointer border border-neutral-200 transition-colors w-full justify-center"
-                        >
-                          <Image className="w-3.5 h-3.5" />
-                          <span>رفع بانر الكمبيوتر من جهازك</span>
-                        </label>
-                      </div>
+                      {isDiscordUrl(siteSettings?.heroBannerUrl || '') && (
+                        <p className="text-[10px] text-rose-600 font-bold font-sans">
+                          ⚠️ الرابط معرّض للاختفاء (Discord)!
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -2055,32 +2008,15 @@ export const Admin: React.FC<AdminProps> = ({
                       <input 
                         type="text"
                         value={siteSettings?.heroBannerMobileUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroBannerMobileUrl: e.target.value })}
-                        placeholder="رابط صورة خلفية الهاتف..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white"
+                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroBannerMobileUrl: cleanAndConvertImageUrl(e.target.value) })}
+                        placeholder="أدخل رابط صورة بانر الهاتف المباشر..."
+                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
                       />
-                      <div className="relative">
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (!file) return;
-                            compressImageFile(file, 640, 640, 0.55, (url) => {
-                              onUpdateSiteSettings({ ...siteSettings, heroBannerMobileUrl: url });
-                            });
-                          }}
-                          className="hidden"
-                          id="settings-hero-mobile-upload"
-                        />
-                        <label 
-                          htmlFor="settings-hero-mobile-upload"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-[10px] font-bold text-neutral-700 cursor-pointer border border-neutral-200 transition-colors w-full justify-center"
-                        >
-                          <Image className="w-3.5 h-3.5" />
-                          <span>رفع بانر الهاتف من جهازك</span>
-                        </label>
-                      </div>
+                      {isDiscordUrl(siteSettings?.heroBannerMobileUrl || '') && (
+                        <p className="text-[10px] text-rose-600 font-bold font-sans">
+                          ⚠️ الرابط معرّض للاختفاء (Discord)!
+                        </p>
+                      )}
                     </div>
                   </div>
 

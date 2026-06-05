@@ -18,7 +18,7 @@ export const CATEGORIES: Category[] = [
   },
   {
     id: 'desserts',
-    name: 'تحليات منزلية',
+    name: 'تحليات أصيلة',
     description: 'فلانات وحلويات منزلية فاخرة بنكهات أصيلة',
     icon: 'Dessert',
   },

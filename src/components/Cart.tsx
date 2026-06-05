@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Truck, HelpCircle, Sparkles, Check } from 'lucide-react';
-import { CartItem, Product } from '../types';
+import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Truck, HelpCircle, Sparkles, Check, Gift, AlertCircle } from 'lucide-react';
+import { CartItem, Product, Coupon } from '../types';
+import { APP_COUPONS } from '../data/products';
 
 interface CartProps {
   cartItems: CartItem[];
@@ -12,6 +13,9 @@ interface CartProps {
   deliveryOption: number; // Current Selected zone delivery fee
   notes: string;
   onNotesChange: (notes: string) => void;
+  coupons?: Coupon[];
+  appliedCoupon: Coupon | null;
+  onApplyCoupon: (coupon: Coupon | null) => void;
 }
 
 export const Cart: React.FC<CartProps> = ({
@@ -23,15 +27,86 @@ export const Cart: React.FC<CartProps> = ({
   deliveryOption,
   notes,
   onNotesChange,
+  coupons = [],
+  appliedCoupon,
+  onApplyCoupon,
 }) => {
   const subtotal = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const FREE_DELIVERY_THRESHOLD = 100;
   const isFreeDelivery = subtotal >= FREE_DELIVERY_THRESHOLD;
+  
+  const discountPercent = appliedCoupon ? appliedCoupon.discountPercent : 0;
+  const discountAmount = Math.round((subtotal * discountPercent) / 100);
   const deliveryCost = isFreeDelivery ? 0 : deliveryOption;
-  const total = subtotal + deliveryCost;
+  const total = subtotal + deliveryCost - discountAmount;
 
   const remainingForFreeDelivery = FREE_DELIVERY_THRESHOLD - subtotal;
   const freeDeliveryProgress = Math.min((subtotal / FREE_DELIVERY_THRESHOLD) * 100, 100);
+
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
+
+  React.useEffect(() => {
+    if (!appliedCoupon) {
+      setCouponSuccess('');
+      setCouponCode('');
+    } else {
+      if (appliedCoupon.minOrder && subtotal < appliedCoupon.minOrder) {
+        onApplyCoupon(null);
+        setCouponSuccess('');
+        setCouponError(`هذا الكوبون يتطلب طلبيّة بحد أدنى قدره ${appliedCoupon.minOrder} DH`);
+      } else {
+        setCouponSuccess(`تم تفعيل الكوبون بنجاح بخصم قدره ${appliedCoupon.discountPercent}%!`);
+        setCouponCode(appliedCoupon.code);
+      }
+    }
+  }, [appliedCoupon, subtotal]);
+
+  const handleApplyCoupon = (e: React.FormEvent) => {
+    e.preventDefault();
+    setCouponError('');
+    setCouponSuccess('');
+
+    if (!couponCode.trim()) {
+      setCouponError('الرجاء إدخال رمز الكوبون أولاً');
+      return;
+    }
+
+    const activeCoupons = coupons.length > 0 ? coupons : APP_COUPONS;
+
+    const foundCoupon = activeCoupons.find(
+      (c) => c.code.toUpperCase() === couponCode.trim().toUpperCase()
+    );
+
+    if (!foundCoupon) {
+      setCouponError('رمز التخفيض غير صحيح أو منتهي الصلاحية');
+      onApplyCoupon(null);
+      return;
+    }
+
+    if (!foundCoupon.active) {
+      setCouponError('هذا الكوبون لم يعد نشطاً حالياً');
+      onApplyCoupon(null);
+      return;
+    }
+
+    if (foundCoupon.minOrder && subtotal < foundCoupon.minOrder) {
+      setCouponError(`هذا الكوبون يتطلب طلبيّة بحد أدنى قدره ${foundCoupon.minOrder} DH`);
+      onApplyCoupon(null);
+      return;
+    }
+
+    onApplyCoupon(foundCoupon);
+    setCouponSuccess(`تم تفعيل الكوبون بنجاح بخصم قدره ${foundCoupon.discountPercent}%!`);
+  };
+
+  const handleRemoveCoupon = () => {
+    onApplyCoupon(null);
+    setCouponCode('');
+    setCouponSuccess('');
+    setCouponError('');
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -63,6 +138,38 @@ export const Cart: React.FC<CartProps> = ({
           <ArrowLeft className="w-4 h-4" />
           <span>العودة لإضافة المزيد من المنتجات</span>
         </button>
+      </div>
+
+      {/* Free delivery promo progress meter */}
+      <div className="bg-white p-5 rounded-3xl border border-brand-gold/15 shadow-sm text-align-start font-sans mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+            <Truck className="w-4.5 h-4.5 text-brand-gold" />
+            توصيل مجاني
+          </span>
+          <span className="text-xs font-black text-brand-gold-dark">الحد المطلوب 100 DH</span>
+        </div>
+
+        {isFreeDelivery ? (
+          <div className="bg-emerald-50 text-emerald-800 p-3 rounded-2xl border border-emerald-100 flex items-center gap-2 mb-1">
+            <Check className="w-4.5 h-4.5 text-emerald-600 font-bold" />
+            <span className="text-sm font-bold">هنيـئـاً لك! طلبيتك مؤهلة للـتوصيـل المجـانـي كـامـلاً!</span>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-600 mb-3 text-align-start">
+            أضف منتجات بقيمة <span className="font-extrabold text-brand-purple">{remainingForFreeDelivery} DH</span> أخرى لتحصل على توصيل مجاني!
+          </p>
+        )}
+
+        {/* Progress-bar fluid background loading */}
+        <div className="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${freeDeliveryProgress}%` }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
+            className={`h-full rounded-full ${isFreeDelivery ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-gold to-brand-purple-light'}`}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -99,7 +206,7 @@ export const Cart: React.FC<CartProps> = ({
                         {item.product.arabicName}
                       </h3>
                       <p className="text-xs text-gray-400 mt-1 uppercase font-semibold">
-                        {item.product.category === 'juices' ? 'عصير طبيعي' : item.product.category === 'desserts' ? 'تحلية منزلية' : item.product.category === 'events' ? 'الأفراح و المناسبات' : 'عرض خاص'}
+                        {item.product.category === 'juices' ? 'عصير طبيعي' : item.product.category === 'desserts' ? 'تحلية أصيلة' : item.product.category === 'events' ? 'الأفراح و المناسبات' : 'عرض خاص'}
                       </p>
                       
                       <div className="text-brand-gold-dark font-extrabold text-sm mt-1">
@@ -153,47 +260,64 @@ export const Cart: React.FC<CartProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* Free delivery promo progress meter */}
-          <div className="bg-white p-5 rounded-3xl border border-brand-gold/15 shadow-sm text-align-start">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
-                <Truck className="w-4.5 h-4.5 text-brand-gold" />
-                توصيل مجاني
-              </span>
-              <span className="text-xs font-black text-brand-gold-dark">الحد المطلوب 100 DH</span>
-            </div>
+          {/* Coupon Segment */}
+          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm text-align-start">
+            <h3 className="text-base font-display font-black text-royal-purple mb-3.5 flex items-center gap-1.5">
+              <Gift className="w-5 h-5 text-brand-gold animate-bounce" />
+              هل لديك كوبون تخفيض مالي؟
+            </h3>
+            
+            <form onSubmit={handleApplyCoupon} className="flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                disabled={!!appliedCoupon}
+                placeholder="رمز الكوبون"
+                className="flex-1 p-3 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs text-center uppercase tracking-widest font-black placeholder:tracking-normal placeholder:font-bold"
+              />
+              {appliedCoupon ? (
+                <button
+                  type="button"
+                  onClick={handleRemoveCoupon}
+                  className="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-2xl text-xs cursor-pointer border border-rose-200 transition-colors"
+                >
+                  إلغاء
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="px-5 bg-royal-purple hover:bg-brand-purple text-white font-bold rounded-2xl text-xs cursor-pointer text-nowrap transition-colors"
+                >
+                  تطبيق
+                </button>
+              )}
+            </form>
 
-            {isFreeDelivery ? (
-              <div className="bg-emerald-50 text-emerald-800 p-3 rounded-2xl border border-emerald-100 flex items-center gap-2 mb-1">
-                <Check className="w-4.5 h-4.5 text-emerald-600 font-bold" />
-                <span className="text-sm font-bold">هنيـئـاً لك! طلبيتك مؤهلة للـتوصيـل المجـانـي كـامـلاً!</span>
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 mb-3">
-                أضف منتجات بقيمة <span className="font-extrabold text-brand-purple">{remainingForFreeDelivery} DH</span> أخرى لتحصل على توصيل مجاني!
+            {couponError && (
+              <p className="text-xs text-rose-600 font-bold mt-2 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5" />
+                {couponError}
               </p>
             )}
 
-            {/* Progress-bar fluid background loading */}
-            <div className="w-full bg-gray-100 rounded-full h-3.5 overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${freeDeliveryProgress}%` }}
-                transition={{ duration: 0.5, ease: 'easeOut' }}
-                className={`h-full rounded-full ${isFreeDelivery ? 'bg-emerald-500' : 'bg-gradient-to-r from-brand-gold to-brand-purple-light'}`}
-              />
-            </div>
+            {couponSuccess && (
+              <p className="text-xs text-emerald-600 font-black mt-2 flex items-center gap-1.5 bg-emerald-50 p-2 rounded-xl border border-emerald-100">
+                <Check className="w-3.5 h-3.5 font-black" />
+                {couponSuccess}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Pricing Summary Breakdown - right panel */}
         <div className="lg:col-span-4">
-          <div className="bg-white p-6 rounded-3xl border border-brand-gold/15 shadow-lg relative overflow-hidden text-align-start sticky top-24">
+          <div className="bg-white p-6 rounded-3xl border border-brand-gold/15 shadow-lg relative overflow-hidden text-align-start sticky top-24 font-sans">
             
             {/* Elegant border ornaments */}
             <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-brand-gold via-brand-purple-light to-brand-gold" />
             
-            <h2 className="text-lg font-display font-black text-royal-purple mb-4 border-b border-gray-100 pb-3">
+            <h2 className="text-lg font-display font-black text-royal-purple mb-4 border-b border-gray-100 pb-3 text-align-start">
               ملخص الحساب الإجمالي
             </h2>
 
@@ -201,15 +325,29 @@ export const Cart: React.FC<CartProps> = ({
 
               <div className="flex flex-col gap-1.5">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-base font-bold text-royal-purple">المجموع الإجمالي لسلتك:</span>
-                  <span className="text-3xl font-black text-brand-gold-dark font-sans">
-                    {subtotal} <span className="text-sm font-bold text-royal-purple">DH</span>
+                  <span className="text-sm font-bold text-gray-500">المجموع الفرعي لطلبك:</span>
+                  <span className="text-lg font-bold text-gray-800 font-sans">
+                    {subtotal} <span className="text-xs text-gray-500 font-bold">DH</span>
                   </span>
                 </div>
               </div>
 
+              {appliedCoupon && (
+                <div className="flex justify-between text-emerald-600 font-black bg-emerald-50/50 p-2 rounded-xl border border-emerald-100 text-xs">
+                  <span>خصم الكوبون ({appliedCoupon.discountPercent}%):</span>
+                  <span>-{discountAmount} DH</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-baseline border-t border-gray-100 pt-3">
+                <span className="text-base font-bold text-royal-purple">المجموع الإجمالي لطلبك:</span>
+                <span className="text-3xl font-black text-brand-gold-dark font-sans">
+                  {subtotal - discountAmount} <span className="text-sm font-bold text-royal-purple">DH</span>
+                </span>
+              </div>
+
               <p className="text-[11.5px] text-brand-purple font-semibold text-right mt-3 leading-relaxed bg-brand-purple-soft/30 p-3 rounded-2xl border border-brand-purple/10">
-                📍 ملاحظة: سيتم تحديد واحتساب سعر التوصيل المناسب لعنوانك في صفحة تأكيد الطلب التالية بعد اختيار حي السكن المحدد. (مجاني بالكامل فوق 100 DH لجميع الأحياء المذكورة).
+                📍 ملاحظة: سيتم تحديد سعر التوصيل المناسب لعنوانك في صفحة تأكيد الطلب التالية بعد اختيار حي السكن المحدد. (مجاني لبعض الأحياء وتلقائياً للطلبات الأزيد من 100 DH).
               </p>
             </div>
 

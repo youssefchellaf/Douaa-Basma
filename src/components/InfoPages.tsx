@@ -352,7 +352,7 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab, siteSettings })
 
             <div className="mt-6 border-t border-brand-gold/10 pt-4 text-center">
               <p className="text-xs text-gray-500 leading-relaxed font-semibold">
-                ملاحظة: لضمان تقديم جودة تليق بضيوفكم، يتم عصر المشروبات وتقديم التحليات طازجة
+                ملاحظة: لضمان تقديم جودة تليق بكم وبضيوفكم، يتم عصر المشروبات وتقديم التحليات طازجة
               </p>
               <div className="mt-4 flex justify-center gap-1 text-xs font-bold text-brand-gold">
                 <span>✦</span>

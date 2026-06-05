@@ -29,22 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   siteSettings,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [logoClicks, setLogoClicks] = useState(0);
 
   const handleLogoClick = () => {
     onSetView('home');
-    const nextClicks = logoClicks + 1;
-    if (nextClicks >= 5) {
-      onUnlockAdmin();
-      setLogoClicks(0);
-    } else {
-      setLogoClicks(nextClicks);
-    }
-    // Auto reset click counts after 3 seconds of inactivity
-    const timeoutId = setTimeout(() => {
-      setLogoClicks(0);
-    }, 3000);
-    return () => clearTimeout(timeoutId);
   };
 
   const baseNavLinks = [

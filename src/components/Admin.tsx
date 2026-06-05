@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Award, DollarSign, ListOrdered, Tag, CheckCircle2, RefreshCw, Sparkles, Plus, Clock, Eye,
   Lock, Unlock, LogOut, Edit3, Trash2, Image, Layers, HelpCircle, Check, X, ShieldAlert, Star,
-  CheckCircle, MessageCircle, Bell, Volume2, VolumeX, Info, AlertCircle
+  CheckCircle, MessageCircle, Bell, Volume2, VolumeX, Info, AlertCircle, ArrowUp, ArrowDown,
+  Copy
 } from 'lucide-react';
 import { Order, Coupon, Product, CategoryId, SiteSettings } from '../types';
 
@@ -279,6 +280,52 @@ export const Admin: React.FC<AdminProps> = ({
     return (localStorage.getItem('db_admin_role') as 'admin' | 'team') || 'admin';
   });
 
+  // --- COPY TRACKING ID STATE & HELPER ---
+  const [copiedOrderId, setCopiedOrderId] = useState<string | null>(null);
+
+  const handleCopyOrderId = (id: string) => {
+    const performCopy = () => {
+      setCopiedOrderId(id);
+      setTimeout(() => {
+        setCopiedOrderId((prev) => (prev === id ? null : prev));
+      }, 1500);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(id)
+        .then(performCopy)
+        .catch(() => {
+          const textArea = document.createElement("textarea");
+          textArea.value = id;
+          textArea.style.position = "fixed";
+          textArea.style.opacity = "0";
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+            performCopy();
+          } catch (e) {
+            console.error("Could not copy ID", e);
+          }
+          document.body.removeChild(textArea);
+        });
+    } else {
+      const textArea = document.createElement("textarea");
+      textArea.value = id;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        performCopy();
+      } catch (e) {
+        console.error("Could not copy ID", e);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   // --- CUSTOM CONFIRMATION DIALOG STATE ---
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -362,11 +409,13 @@ export const Admin: React.FC<AdminProps> = ({
 
   const handleLocalStatusChange = (order: Order, newStatus: Order['status']) => {
     onUpdateOrderStatus(order.id, newStatus);
-    setStatusUpdateModal({
-      isOpen: true,
-      order,
-      status: newStatus,
-    });
+    if (newStatus !== 'new') {
+      setStatusUpdateModal({
+        isOpen: true,
+        order,
+        status: newStatus,
+      });
+    }
   };
 
   // --- PASSCODE MANAGEMENT STATE ---
@@ -426,7 +475,7 @@ export const Admin: React.FC<AdminProps> = ({
   });
 
   const [lastOrdersCount, setLastOrdersCount] = useState(() => orders.length);
-  const pendingOrders = orders.filter((o) => o && o.status === 'pending');
+  const pendingOrders = orders.filter((o) => o && o.status === 'new');
 
   // Sync to localStorage
   React.useEffect(() => {
@@ -826,6 +875,32 @@ export const Admin: React.FC<AdminProps> = ({
     onUpdateProducts(updatedProducts);
   };
 
+  const handleMoveProductUp = (productId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const index = products.findIndex((p) => p.id === productId);
+    if (index <= 0) return; // Already at the top or not found
+    
+    const newProducts = [...products];
+    const temp = newProducts[index];
+    newProducts[index] = newProducts[index - 1];
+    newProducts[index - 1] = temp;
+    
+    onUpdateProducts(newProducts);
+  };
+
+  const handleMoveProductDown = (productId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const index = products.findIndex((p) => p.id === productId);
+    if (index === -1 || index >= products.length - 1) return; // Already at the bottom or not found
+    
+    const newProducts = [...products];
+    const temp = newProducts[index];
+    newProducts[index] = newProducts[index + 1];
+    newProducts[index + 1] = temp;
+    
+    onUpdateProducts(newProducts);
+  };
+
   // --- SECURE passcode GATE screen (rendered when not authenticated) ---
   if (!isAuthorized) {
     return (
@@ -885,7 +960,7 @@ export const Admin: React.FC<AdminProps> = ({
 
   // --- core MAIN ADMIN DASHBOARD (rendered only when isAuthorized) ---
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 font-sans text-align-start">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-8 font-sans text-align-start">
       
       {/* Title block with secret metadata and lock back options */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -1066,11 +1141,10 @@ export const Admin: React.FC<AdminProps> = ({
                 <button
                   type="button"
                   onClick={handleOpenClearAllOrdersConfirm}
-                  className="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs px-2.5 py-1.5 rounded-lg border border-rose-100 font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  className="bg-rose-50 hover:bg-rose-100 text-rose-600 w-8 h-8 rounded-lg border border-rose-100 transition-all flex items-center justify-center cursor-pointer"
                   title="حذف جميع الطلبات"
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>حذف كافة الطلبات</span>
+                  <Trash2 className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -1092,14 +1166,28 @@ export const Admin: React.FC<AdminProps> = ({
                     <th className="p-3 text-right">المنتجات المطلوبة</th>
                     <th className="p-3 text-right">الحالة والتحكم</th>
                     <th className="p-3 text-right">الإجمالي</th>
-                    <th className="p-3 text-right min-w-[280px] md:min-w-[340px]">معلومات الطلب</th>
+                    <th className="p-3 text-right min-w-[320px] md:min-w-[480px]">معلومات الطلب</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {orders.map((order) => (
                     <tr key={order.id} className="hover:bg-brand-cream/40 transition-colors">
                       <td className="p-3 font-sans">
-                        <span className="font-bold text-brand-purple block text-xs">#{order.id}</span>
+                        <div className="flex items-center gap-1.5 mb-1.5 select-all">
+                          <span className="font-bold text-brand-purple text-xs">#{order.id}</span>
+                          <button
+                            onClick={() => handleCopyOrderId(order.id)}
+                            title="نسخ رقم تتبع الطلب"
+                            type="button"
+                            className="p-1 rounded-md bg-purple-50 text-brand-purple hover:bg-brand-purple hover:text-white transition-all cursor-pointer shadow-xs"
+                          >
+                            {copiedOrderId === order.id ? (
+                              <Check className="w-3 h-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        </div>
                         <span className="font-semibold text-gray-800 block text-sm mt-0.5">{order.fullName}</span>
                         <a
                           href={generateWhatsAppConfirmUrl(order, siteSettings?.storeName)}
@@ -1131,18 +1219,21 @@ export const Admin: React.FC<AdminProps> = ({
                             value={order.status}
                             onChange={(e) => handleLocalStatusChange(order, e.target.value as Order['status'])}
                             className={`p-1.5 rounded-lg text-[11px] font-bold outline-none border transition-colors cursor-pointer w-full text-center ${
-                              order.status === 'pending'
-                                ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                : order.status === 'preparing'
-                                  ? 'bg-pink-50 text-pink-700 border-pink-200'
-                                  : order.status === 'on_way'
-                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                    : order.status === 'cancelled'
-                                      ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              order.status === 'new'
+                                ? 'bg-slate-50 text-slate-700 border-slate-200'
+                                : order.status === 'pending'
+                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                  : order.status === 'preparing'
+                                    ? 'bg-pink-50 text-pink-700 border-pink-200'
+                                    : order.status === 'on_way'
+                                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                      : order.status === 'cancelled'
+                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             }`}
                           >
-                            <option value="pending">مسجل ومعتمد (مستلم)</option>
+                            <option value="new">طلب جديد</option>
+                            <option value="pending">تم تأكيد الطلب</option>
                             <option value="preparing">تقشير ومزج العصائر (جاري)</option>
                             <option value="on_way">مغادرة المندوب المبرّد (بالطريق)</option>
                             <option value="delivered">تـم التسليم بنجاح (مكتمل)</option>
@@ -1150,16 +1241,18 @@ export const Admin: React.FC<AdminProps> = ({
                           </select>
 
                           {/* Quick manual status whatsapp sender */}
-                          <a
-                            href={generateWhatsAppStatusUpdateUrl(order, order.status, siteSettings?.storeName)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full py-1 px-1.5 border border-brand-purple/25 bg-brand-purple-soft/40 hover:bg-brand-purple-soft text-brand-purple rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs text-center"
-                            title="إرسال رسالة حالة الطلب اليدوية عبر واتساب للزبون"
-                          >
-                            <MessageCircle className="w-3 h-3 text-brand-purple" />
-                            <span>إرسال الحالة للزبون</span>
-                          </a>
+                          {order.status !== 'new' && (
+                            <a
+                              href={generateWhatsAppStatusUpdateUrl(order, order.status, siteSettings?.storeName)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full py-1 px-1.5 border border-brand-purple/25 bg-brand-purple-soft/40 hover:bg-brand-purple-soft text-brand-purple rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs text-center"
+                              title="إرسال رسالة حالة الطلب اليدوية عبر واتساب للزبون"
+                            >
+                              <MessageCircle className="w-3 h-3 text-brand-purple" />
+                              <span>إرسال الحالة للزبون</span>
+                            </a>
+                          )}
 
                           {/* Controls for Order (Admin / Team) */}
                           <div className="flex gap-1.5 justify-stretch w-full">
@@ -1195,7 +1288,7 @@ export const Admin: React.FC<AdminProps> = ({
                       </td>
 
                       <td className="p-3">
-                        <div className="text-xs space-y-1.5 text-right max-w-[320px] md:max-w-[420px]">
+                        <div className="text-xs space-y-1.5 text-right max-w-[320px] md:max-w-[560px]">
                           <div>
                             <span className="text-gray-400 font-bold block text-[10px]">المنطقة والعنوان:</span>
                             {(() => {
@@ -1220,101 +1313,124 @@ export const Admin: React.FC<AdminProps> = ({
                               return (
                                 <span className="text-gray-700 font-semibold block leading-tight text-xs">
                                   <span className="text-brand-gold-dark font-black">{area || "غير محدد"}</span>
-                                </span>
-                              );
-                            })()}
-                          </div>
+                                 </span>
+                               );
+                             })()}
+                           </div>
 
-                          {/* Product-Specific Customisation Notes */}
-                          <div className="bg-purple-50/60 border border-purple-100/80 p-2 rounded-xl my-1.5 text-[11px] leading-relaxed">
-                            <span className="text-brand-purple font-black block text-[10px] mb-1">📋 ملاحظات تخصيص الطلب:</span>
-                            <ul className="space-y-0.5 text-gray-700 font-semibold">
-                              {(order.items || []).map((item, idx) => {
-                                let note = 'بدون ملاحظات';
-                                if (item?.product?.description && item.product.description.includes('[تعليمات إضافية:')) {
-                                  const parts = item.product.description.split('[تعليمات إضافية:');
-                                  if (parts.length > 1) {
-                                    const extracted = parts[1].split(']')[0].trim();
-                                    if (extracted) {
-                                      note = extracted;
-                                    }
-                                  }
-                                }
-                                return (
-                                  <li key={idx} className="block text-right">
-                                    • {item?.product?.arabicName || ""}: <span className={note === 'بدون ملاحظات' ? 'text-gray-400 font-normal' : 'text-brand-purple font-bold bg-brand-purple/5 px-1 rounded'}>{note}</span>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </div>
+                           {/* Product-Specific Customisation Notes */}
+                           <div className="bg-purple-50/60 border border-purple-100/80 p-2 rounded-xl my-1.5 text-[11px] leading-relaxed">
+                             <span className="text-brand-purple font-black block text-[10px] mb-1">📋 ملاحظات تخصيص الطلب:</span>
+                             <ul className="space-y-0.5 text-gray-700 font-semibold">
+                               {(order.items || []).map((item, idx) => {
+                                 let note = 'بدون ملاحظات';
+                                 if (item?.product?.description && item.product.description.includes('[تعليمات إضافية:')) {
+                                   const parts = item.product.description.split('[تعليمات إضافية:');
+                                   if (parts.length > 1) {
+                                     const extracted = parts[1].split(']')[0].trim();
+                                     if (extracted) {
+                                       note = extracted;
+                                     }
+                                   }
+                                 }
+                                 return (
+                                   <li key={idx} className="block text-right">
+                                     • {item?.product?.arabicName || ""}: <span className={note === 'بدون ملاحظات' ? 'text-gray-400 font-normal' : 'text-brand-purple font-bold bg-brand-purple/5 px-1 rounded'}>{note}</span>
+                                   </li>
+                                 );
+                               })}
+                             </ul>
+                           </div>
 
-                          <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                            {order.couponApplied && (
-                              <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[9px] px-1.5 py-0.5 rounded-md font-bold">
-                                كوبون: {order.couponApplied} ({order.discountAmount} DH-)
-                              </span>
-                            )}
-                            <span className="text-gray-400 text-[10px] font-sans block bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
-                              {order.date ? (
-                                (() => {
-                                  try {
-                                    return new Date(order.date).toLocaleString('ar-MA', {
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                      day: '2-digit',
-                                      month: '2-digit'
-                                    });
-                                  } catch (e) {
-                                    return order.date;
-                                  }
-                                })()
-                              ) : '-'}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+                           <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                             {order.couponApplied && (
+                               <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[9px] px-1.5 py-0.5 rounded-md font-bold">
+                                 كوبون: {order.couponApplied} ({order.discountAmount} DH-)
+                               </span>
+                             )}
+                             <span className="text-gray-400 text-[10px] font-sans block bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                               {order.date ? (
+                                 (() => {
+                                   try {
+                                     return new Date(order.date).toLocaleString('ar-MA', {
+                                       hour: '2-digit',
+                                       minute: '2-digit',
+                                       day: '2-digit',
+                                       month: '2-digit'
+                                     });
+                                   } catch (e) {
+                                     return order.date;
+                                   }
+                                 })()
+                               ) : '-'}
+                             </span>
+                           </div>
+                         </div>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+           )}
+         </div>
+       )}
 
-      {/* --- TAB 2: PRODUCTS A-Z CATALOGUE --- */}
-      {activeTab === 'products' && (
-        <div className="space-y-6">
-          <div className="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-2 border-b border-gray-100">
-              <div>
-                <h2 className="text-base font-display font-black text-royal-purple">لوحة التحكم بالمنتجات من الألف إلى الياء (A-Z)</h2>
-                {adminRole === 'admin' ? (
-                  <p className="text-gray-400 text-xs mt-0.5">أضف، عدل الأسعار، المكونات، وقم برفع الصور بدقة ليراها جميع زبائن الموقع فورا.</p>
-                ) : (
-                  <p className="text-amber-600 text-xs mt-0.5 font-bold flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
-                    صلاحيات فريق العمل المحدودة: يُسمح لك كعضو فريق فقط بتفعيل حالة التوفر (متوفر / غير متوفر).
-                  </p>
-                )}
-              </div>
+       {/* --- TAB 2: PRODUCTS A-Z CATALOGUE --- */}
+       {activeTab === 'products' && (
+         <div className="space-y-6">
+           <div className="bg-white p-3 sm:p-5 md:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm">
+             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-2 border-b border-gray-100">
+               <div>
+                 <h2 className="text-base font-display font-black text-royal-purple">لوحة التحكم بالمنتجات من الألف إلى الياء (A-Z)</h2>
+                 {adminRole === 'admin' ? (
+                   <p className="text-gray-400 text-xs mt-0.5">أضف، عدل الأسعار، المكونات، وقم برفع الصور بدقة ليراها جميع زبائن الموقع فورا.</p>
+                 ) : (
+                   <p className="text-amber-600 text-xs mt-0.5 font-bold flex items-center gap-1">
+                     <span className="inline-block w-2 h-2 bg-amber-500 rounded-full animate-ping"></span>
+                     صلاحيات فريق العمل المحدودة: يُسمح لك كعضو فريق فقط بتفعيل حالة التوفر (متوفر / غير متوفر).
+                   </p>
+                 )}
+               </div>
 
-              {adminRole === 'admin' && (
-                <button
-                  onClick={handleOpenAddProduct}
-                  className="px-4 py-2 bg-brand-purple hover:bg-brand-purple-light text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>إدراج منتج طبيعي جديد</span>
-                </button>
-              )}
-            </div>
+               {adminRole === 'admin' && (
+                 <button
+                   onClick={handleOpenAddProduct}
+                   className="px-4 py-2 bg-brand-purple hover:bg-brand-purple-light text-white font-black text-xs rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+                 >
+                   <Plus className="w-4 h-4" />
+                   <span>إدراج منتج طبيعي جديد</span>
+                 </button>
+               )}
+             </div>
 
-            {/* List grid of customizable products */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {products.map((p) => (
-                <div key={p.id} className="p-4 rounded-2xl border border-gray-100 bg-brand-cream/30 hover:border-brand-purple/20 transition-all flex items-start gap-4">
+             {/* List grid of customizable products with draggable/scrollable layout for mobile views */}
+             <div className="overflow-x-auto pb-3 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-thin">
+               <div className="grid grid-cols-1 gap-4 min-w-[480px] md:min-w-0">
+                 {products.map((p, idx) => (
+                 <div key={p.id} className="p-3 sm:p-4 rounded-2xl border border-gray-100 bg-brand-cream/30 hover:border-brand-purple/20 transition-all flex items-start gap-3 sm:gap-4">
+                  {/* Reordering column button controls */}
+                  {adminRole === 'admin' && (
+                    <div className="flex flex-col gap-1 justify-center self-stretch shrink-0 border-l border-gray-100 pl-2.5">
+                      <button
+                        onClick={(e) => handleMoveProductUp(p.id, e)}
+                        className="p-1 rounded-lg bg-white border border-gray-150 text-gray-500 hover:text-brand-purple hover:border-brand-purple/50 disabled:opacity-20 disabled:pointer-events-none transition-all cursor-pointer shadow-3xs"
+                        title="تحريك لأعلى"
+                        disabled={idx === 0}
+                      >
+                        <ArrowUp className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => handleMoveProductDown(p.id, e)}
+                        className="p-1 rounded-lg bg-white border border-gray-150 text-gray-500 hover:text-brand-purple hover:border-brand-purple/50 disabled:opacity-20 disabled:pointer-events-none transition-all cursor-pointer shadow-3xs"
+                        title="تحريك لأسفل"
+                        disabled={idx === products.length - 1}
+                      >
+                        <ArrowDown className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
                   <img
                     src={p.image}
                     alt={p.arabicName}
@@ -1398,10 +1514,11 @@ export const Admin: React.FC<AdminProps> = ({
                   </div>
                 </div>
               ))}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
           {/* ADD / EDIT PRODUCT POPUP FORM DISPLAY MODAL */}
           <AnimatePresence>
@@ -1421,7 +1538,7 @@ export const Admin: React.FC<AdminProps> = ({
                   initial={{ opacity: 0, scale: 0.95, y: 30 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 30 }}
-                  className="bg-white rounded-3xl p-6 shadow-2xl relative z-10 w-full max-w-2xl max-h-[85vh] overflow-y-auto"
+                  className="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl relative z-10 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
                 >
                   <button
                     onClick={() => setIsFormOpen(false)}
@@ -1481,7 +1598,7 @@ export const Admin: React.FC<AdminProps> = ({
                           className="w-full p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple text-xs font-sans"
                         >
                           <option value="juices">عصائر طبيعية (juices)</option>
-                          <option value="desserts">تحليات منزلية (desserts)</option>
+                          <option value="desserts">تحليات أصيلة (desserts)</option>
                           <option value="specials">عروض خاصة (specials)</option>
                           <option value="events">الأفراح و المناسبات (events)</option>
                         </select>
@@ -2538,7 +2655,7 @@ export const Admin: React.FC<AdminProps> = ({
               <div className={`h-2 w-full ${
                 confirmDialog.type === 'cancel' 
                   ? 'bg-amber-500' 
-                  : confirmDialog.type === 'delete' || confirmDialog.type === 'delete_product'
+                  : confirmDialog.type === 'delete' || confirmDialog.type === 'delete_product' || confirmDialog.type === 'clear_all_orders'
                   ? 'bg-rose-600'
                   : 'bg-brand-purple'
               }`} />
@@ -2564,6 +2681,7 @@ export const Admin: React.FC<AdminProps> = ({
                       {confirmDialog.type === 'cancel' && 'تأكيد إلغاء الطلبية'}
                       {confirmDialog.type === 'delete' && 'حذف الطلبية نهائياً'}
                       {confirmDialog.type === 'delete_product' && 'حذف المنتج نهائياً'}
+                      {confirmDialog.type === 'clear_all_orders' && 'حذف كافة الطلبات نهائياً'}
                     </h3>
                     
                     <p className="text-xs text-gray-500 leading-relaxed font-semibold">
@@ -2585,6 +2703,12 @@ export const Admin: React.FC<AdminProps> = ({
                           <span className="block mt-1 text-rose-700">⚠️ لن يتوفر المنتج للطلب مجدداً للزوار بمجرد تأكيد الحذف.</span>
                         </>
                       )}
+                      {confirmDialog.type === 'clear_all_orders' && (
+                        <>
+                          هل أنت متأكد من رغبتك في حذف كافة الطلبات المستلمة نهائياً من المتصفح؟
+                          <span className="block mt-2 text-rose-700 font-bold">⚠️ هذا الإجراء غير قابل للتراجع تماماً وسيتم مسح جميع الطلبات نهائياً من قاعدة البيانات المحلية.</span>
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
@@ -2600,7 +2724,7 @@ export const Admin: React.FC<AdminProps> = ({
                         : 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-100 hover:shadow-lg'
                     }`}
                   >
-                    <span>{confirmDialog.type === 'cancel' ? 'تأكيد إلغاء الطلب' : 'تأكيد الحذف نهائياً'}</span>
+                    <span>{confirmDialog.type === 'cancel' ? 'تأكيد إلغاء الطلب' : confirmDialog.type === 'clear_all_orders' ? 'تأكيد حذف كافة الطلبات' : 'تأكيد الحذف نهائياً'}</span>
                   </button>
 
                   <button
@@ -2680,7 +2804,8 @@ export const Admin: React.FC<AdminProps> = ({
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                 : 'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
-                        {statusUpdateModal.status === 'pending' && 'مسجل ومعتمد (مستلم)'}
+                        {statusUpdateModal.status === 'new' && 'طلب جديد'}
+                        {statusUpdateModal.status === 'pending' && 'تم تأكيد الطلب'}
                         {statusUpdateModal.status === 'preparing' && 'تقشير ومزج العصائر (جاري)'}
                         {statusUpdateModal.status === 'on_way' && 'مغادرة المندوب المبرّد (بالطريق)'}
                         {statusUpdateModal.status === 'delivered' && 'تـم التسليم بنجاح (مكتمل)'}
@@ -2778,9 +2903,23 @@ export const Admin: React.FC<AdminProps> = ({
                       <div key={order.id} className="bg-brand-cream/40 border border-brand-purple/10 rounded-2xl p-4 hover:border-brand-purple/35 transition-all text-right">
                         <div className="flex justify-between items-start gap-2 border-b border-gray-105 pb-3 mb-3">
                           <div>
-                            <span className="font-mono text-xs font-black text-brand-purple bg-purple-50 px-2 py-1 rounded-lg">
-                              #{order.id}
-                            </span>
+                            <div className="flex items-center gap-1.5 select-all">
+                              <span className="font-mono text-xs font-black text-brand-purple bg-purple-50 px-2.5 py-1 rounded-lg">
+                                #{order.id}
+                              </span>
+                              <button
+                                onClick={() => handleCopyOrderId(order.id)}
+                                title="نسخ رقم تتبع الطلب"
+                                type="button"
+                                className="p-1 rounded-md bg-purple-50 text-brand-purple hover:bg-brand-purple hover:text-white transition-all cursor-pointer shadow-xs"
+                              >
+                                {copiedOrderId === order.id ? (
+                                  <Check className="w-3 h-3 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
                             <span className="text-xs text-gray-400 font-sans block mt-1.5 font-bold">
                               التاريخ: {new Date(order.date).toLocaleString('ar-MA', { hour12: false })}
                             </span>
@@ -2836,15 +2975,7 @@ export const Admin: React.FC<AdminProps> = ({
                               <ListOrdered className="w-3.5 h-3.5" />
                               <span>قائمة الطلبات</span>
                             </button>
-                            <a
-                              href={`https://wa.me/${order.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`أهلاً بك زبوننا الكريم ${order.fullName}`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-lg transition-colors flex items-center gap-1"
-                            >
-                              <MessageCircle className="w-3.5 h-3.5" />
-                              واتساب
-                            </a>
+                            {/* No whatsapp option for pending orders */}
                           </div>
 
                         </div>

@@ -68,7 +68,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {/* Rating & Category tag */}
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold text-brand-purple uppercase">
-              {product.category === 'juices' ? 'عصير طبيعي' : product.category === 'desserts' ? 'تحلية منزلية' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
+              {product.category === 'juices' ? 'عصير طبيعي' : product.category === 'desserts' ? 'تحلية أصيلة' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
             </span>
             <div className="flex items-center gap-1 bg-brand-gold-soft px-2 py-0.5 rounded-md">
               <Star className="w-3 h-3 text-brand-gold fill-brand-gold" />

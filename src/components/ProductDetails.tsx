@@ -20,6 +20,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
   const [quantity, setQuantity] = useState<number>(1);
   const [instructions, setInstructions] = useState<string>('');
   const [successMsg, setSuccessMsg] = useState<boolean>(false);
+  const [recommendations, setRecommendations] = useState<Product[]>([]);
 
   useEffect(() => {
     if (productId) {
@@ -35,6 +36,27 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
     }
   }, [productId]);
 
+  useEffect(() => {
+    if (!product) {
+      setRecommendations([]);
+      return;
+    }
+
+    // Filter candidate products of categories 'desserts' or 'juices' excluding the current one
+    let candidates = products.filter(
+      (p) => p.id !== product.id && (p.category === 'desserts' || p.category === 'juices')
+    );
+
+    // If we have fewer than 3, fall back to any products other than the current one
+    if (candidates.length < 3) {
+      candidates = products.filter((p) => p.id !== product.id);
+    }
+
+    // Pick 3 random candidate recommended products by shuffling
+    const shuffled = [...candidates].sort(() => 0.5 - Math.random());
+    setRecommendations(shuffled.slice(0, 3));
+  }, [product, products]);
+
   if (!productId || !product) return null;
 
   const handleIncrement = () => setQuantity((prev) => prev + 1);
@@ -48,9 +70,6 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
       onClose();
     }, 1500);
   };
-
-  // Find 3 recommended products in the same category or overall
-  const recommendations = products.filter((p) => p.id !== product.id && (p.category === product.category || p.isFeatured)).slice(0, 3);
 
   return (
     <AnimatePresence>
@@ -97,7 +116,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none md:bg-gradient-to-l" />
                 <div className="absolute bottom-6 right-6 left-6 text-white text-align-start">
                   <span className="bg-brand-gold text-white text-xs font-bold px-3 py-1 rounded-full uppercase inline-block mb-2">
-                    {product.category === 'juices' ? 'عصائر طبيعية' : product.category === 'desserts' ? 'تحليات منزلية' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
+                    {product.category === 'juices' ? 'عصائر طبيعية' : product.category === 'desserts' ? 'تحليات أصيلة' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
                   </span>
                   <h2 className="text-2xl md:text-3xl font-display font-black text-white drop-shadow-md">
                     {product.arabicName}
@@ -247,7 +266,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
             <div className="bg-brand-cream p-6 md:p-8 border-t border-gray-100 text-align-start font-sans">
               <h3 className="text-lg font-bold text-royal-purple border-r-3 border-brand-gold pr-2.5 mb-4 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-brand-gold" />
-                تحليات ومشروبات ننصحك بها لتكتمل المتعة
+                عصائر وتحليات ننصحك بها لتكتمل المتعة
               </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

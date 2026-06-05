@@ -38,7 +38,7 @@ export interface Order {
   items: CartItem[];
   subtotal: number;
   total: number;
-  status: 'pending' | 'preparing' | 'on_way' | 'delivered' | 'cancelled';
+  status: 'new' | 'pending' | 'preparing' | 'on_way' | 'delivered' | 'cancelled';
   date: string;
   couponApplied?: string;
   discountAmount?: number;

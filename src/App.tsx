@@ -475,6 +475,16 @@ export default function App() {
     return defaultOrders;
   });
 
+  const [myPlacedOrderIds, setMyPlacedOrderIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('db_my_placed_order_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      console.error("Error reading db_my_placed_order_ids from localStorage:", e);
+      return [];
+    }
+  });
+
   const [coupons, setCoupons] = useState<Coupon[]>(() => {
     try {
       const saved = localStorage.getItem('db_coupons');
@@ -492,6 +502,7 @@ export default function App() {
   });
 
   const [orderNotes, setOrderNotes] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
 
   // --- PERSISTENCE SYNCS ---
   useEffect(() => {
@@ -529,6 +540,10 @@ export default function App() {
   useEffect(() => {
     saveToLocalStorage('db_coupons', JSON.stringify(coupons));
   }, [coupons]);
+
+  useEffect(() => {
+    saveToLocalStorage('db_my_placed_order_ids', JSON.stringify(myPlacedOrderIds));
+  }, [myPlacedOrderIds]);
 
   useEffect(() => {
     saveToLocalStorage('db_products', JSON.stringify(productsList));
@@ -706,7 +721,7 @@ export default function App() {
       items: [...cartItems],
       subtotal,
       total,
-      status: 'pending',
+      status: 'new',
       date: new Date().toISOString().replace('T', ' ').substring(0, 16),
       couponApplied: orderData.couponApplied,
       discountAmount: orderData.discountAmount,
@@ -715,6 +730,7 @@ export default function App() {
 
     // Save order in state lists (pre-pended so latest is always visible)
     setOrders((prev) => [newOrder, ...prev]);
+    setMyPlacedOrderIds((prev) => [randomId, ...prev]);
 
     triggerToast(`تـم تسجيل طلبيتك بنجاح برقم التتبع #${randomId}! تم حفظ الطلب ومتابعته في لوحة التحكم.`, 'success');
 
@@ -1024,7 +1040,7 @@ export default function App() {
               </div>
 
               {/* Sub selectors filters and sorters */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white p-4 rounded-3xl border border-gray-100">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-royal-purple p-4 rounded-3xl border border-brand-purple/30 shadow-lg shadow-brand-purple/15">
                 
                 {/* Categories filtering tab buttons */}
                 <div className="flex flex-wrap gap-1.5">
@@ -1034,8 +1050,8 @@ export default function App() {
                       onClick={() => setActiveCategory(cat.id)}
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                         activeCategory === cat.id
-                          ? 'bg-brand-purple text-white shadow-sm shadow-brand-purple/10'
-                          : 'bg-brand-cream hover:bg-gray-100 text-gray-600'
+                          ? 'bg-brand-gold hover:bg-brand-gold-light text-royal-purple shadow-md shadow-brand-gold/20'
+                          : 'bg-white/10 hover:bg-white/20 text-purple-100 border border-white/5'
                       }`}
                     >
                       {cat.name}
@@ -1044,18 +1060,18 @@ export default function App() {
                 </div>
 
                 {/* Sorting option trigger menu */}
-                <div className="flex items-center gap-2 relative bg-brand-cream/60 px-3 py-1.5 rounded-xl border border-gray-100">
-                  <ArrowUpDown className="w-3.5 h-3.5 text-brand-purple" />
-                  <span className="text-[11px] text-gray-400 font-bold">ترتيب المنتجات:</span>
+                <div className="flex items-center gap-2 relative bg-white/10 px-3 py-1.5 rounded-xl border border-white/5">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold" />
+                  <span className="text-[11px] text-purple-200 font-bold">ترتيب المنتجات:</span>
                   <select
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
-                    className="text-xs font-bold text-gray-700 outline-none bg-transparent cursor-pointer"
+                    className="text-xs font-bold text-white outline-none bg-transparent cursor-pointer [&>option]:bg-royal-purple [&>option]:text-white"
                   >
-                    <option value="default">الافتراضي (الأصوب)</option>
-                    <option value="priceAsc">السعر: من الأقل إلى الأكثر</option>
-                    <option value="priceDesc">السعر: من الأكثر إلى الأقل</option>
-                    <option value="rating">الأعلى تقييماً وطلباً</option>
+                    <option value="default" className="bg-royal-purple text-white">الافتراضي (الأصوب)</option>
+                    <option value="priceAsc" className="bg-royal-purple text-white">السعر: من الأقل إلى الأكثر</option>
+                    <option value="priceDesc" className="bg-royal-purple text-white">السعر: من الأكثر إلى الأقل</option>
+                    <option value="rating" className="bg-royal-purple text-white">الأعلى تقييماً وطلباً</option>
                   </select>
                 </div>
 
@@ -1073,7 +1089,7 @@ export default function App() {
               ) : (
                 <motion.div
                   layout
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8 justify-center"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto justify-center"
                 >
                   <AnimatePresence>
                     {sortedProducts.map((p) => (
@@ -1126,6 +1142,9 @@ export default function App() {
             deliveryOption={selectedZoneCost}
             notes={orderNotes}
             onNotesChange={setOrderNotes}
+            coupons={coupons}
+            appliedCoupon={appliedCoupon}
+            onApplyCoupon={setAppliedCoupon}
           />
         )}
 
@@ -1141,13 +1160,15 @@ export default function App() {
             onZoneChange={handleZoneChange}
             coupons={coupons}
             notes={orderNotes}
+            appliedCoupon={appliedCoupon}
+            onApplyCoupon={setAppliedCoupon}
           />
         )}
 
         {/* VIEW 7: ORDER PROGRESS TRACKING (تتبع الطلب) */}
         {currentView === 'track' && (
           <Tracking
-            orders={orders}
+            orders={orders.filter(o => myPlacedOrderIds.includes(o.id))}
             onViewStore={() => handleSetView('home')}
             siteSettings={siteSettings}
           />

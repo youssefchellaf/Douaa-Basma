@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Send, Sparkles, MapPin, AlertCircle, Check, CreditCard, Gift } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, MapPin, AlertCircle, Check, CreditCard, Gift, Truck } from 'lucide-react';
 import { CartItem, Coupon } from '../types';
-import { DELIVERY_ZONES, APP_COUPONS } from '../data/products';
+import { DELIVERY_ZONES } from '../data/products';
 
 interface CheckoutProps {
   cartItems: CartItem[];
@@ -22,6 +22,8 @@ interface CheckoutProps {
   onZoneChange: (zoneId: string) => void;
   coupons?: Coupon[];
   notes: string;
+  appliedCoupon: Coupon | null;
+  onApplyCoupon: (coupon: Coupon | null) => void;
 }
 
 export const Checkout: React.FC<CheckoutProps> = ({
@@ -34,14 +36,12 @@ export const Checkout: React.FC<CheckoutProps> = ({
   onZoneChange,
   coupons = [],
   notes,
+  appliedCoupon,
+  onApplyCoupon,
 }) => {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
-  const [couponError, setCouponError] = useState('');
-  const [couponSuccess, setCouponSuccess] = useState('');
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const clearError = (field: string) => {
@@ -58,54 +58,13 @@ export const Checkout: React.FC<CheckoutProps> = ({
   const isFreeDelivery = subtotal >= FREE_DELIVERY_THRESHOLD;
   const actualDeliveryCost = isFreeDelivery ? 0 : deliveryCost;
 
+  const remainingForFreeDelivery = FREE_DELIVERY_THRESHOLD - subtotal;
+  const freeDeliveryProgress = Math.min((subtotal / FREE_DELIVERY_THRESHOLD) * 100, 100);
+
   // Coupon calculations
   const discountPercent = appliedCoupon ? appliedCoupon.discountPercent : 0;
   const discountAmount = Math.round((subtotal * discountPercent) / 100);
   const finalTotal = subtotal + actualDeliveryCost - discountAmount;
-
-  const handleApplyCoupon = (e: React.FormEvent) => {
-    e.preventDefault();
-    setCouponError('');
-    setCouponSuccess('');
-
-    if (!couponCode.trim()) {
-      setCouponError('الرجاء إدخال رمز الكوبون أولاً');
-      return;
-    }
-
-    const activeCoupons = coupons.length > 0 ? coupons : APP_COUPONS;
-
-    const foundCoupon = activeCoupons.find(
-      (c) => c.code.toUpperCase() === couponCode.trim().toUpperCase()
-    );
-
-    if (!foundCoupon) {
-      setCouponError('رمز التخفيض غير صحيح أو منتهي الصلاحية');
-      setAppliedCoupon(null);
-      return;
-    }
-
-    if (!foundCoupon.active) {
-      setCouponError('هذا الكوبون لم يعد نشطاً حالياً');
-      setAppliedCoupon(null);
-      return;
-    }
-
-    if (foundCoupon.minOrder && subtotal < foundCoupon.minOrder) {
-      setCouponError(`هذا الكوبون يتطلب طلبيّة بحد أدنى قدره ${foundCoupon.minOrder} DH`);
-      setAppliedCoupon(null);
-      return;
-    }
-
-    setAppliedCoupon(foundCoupon);
-    setCouponSuccess(`تم تفعيل الكوبون بنجاح بخصم قدره ${foundCoupon.discountPercent}%!`);
-  };
-
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponCode('');
-    setCouponSuccess('');
-  };
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
@@ -335,57 +294,6 @@ export const Checkout: React.FC<CheckoutProps> = ({
         {/* Invoice breakdown & Coupons - right side */}
         <div className="lg:col-span-5 space-y-6 text-align-start font-sans">
           
-          {/* Coupon Segment */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <h3 className="text-base font-display font-black text-royal-purple mb-3.5 flex items-center gap-1.5">
-              <Gift className="w-5 h-5 text-brand-gold animate-bounce" />
-              هل لديك كوبون تخفيض مالي؟
-            </h3>
-            
-            <form onSubmit={handleApplyCoupon} className="flex gap-2">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                disabled={!!appliedCoupon}
-                placeholder="رمز الكوبون"
-                className="flex-1 p-3 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs text-center uppercase tracking-widest font-black placeholder:tracking-normal placeholder:font-bold"
-              />
-              {appliedCoupon ? (
-                <button
-                  type="button"
-                  onClick={handleRemoveCoupon}
-                  className="px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-2xl text-xs cursor-pointer border border-rose-200"
-                >
-                  إلغاء
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  className="px-5 bg-royal-purple hover:bg-brand-purple text-white font-bold rounded-2xl text-xs cursor-pointer text-nowrap transition-colors"
-                >
-                  تطبيق
-                </button>
-              )}
-            </form>
-
-            {couponError && (
-              <p className="text-xs text-rose-600 font-bold mt-2 flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {couponError}
-              </p>
-            )}
-
-            {couponSuccess && (
-              <p className="text-xs text-emerald-600 font-black mt-2 flex items-center gap-1.5 bg-emerald-50 p-2 rounded-xl border border-emerald-100">
-                <Check className="w-3.5 h-3.5 font-black" />
-                {couponSuccess}
-              </p>
-            )}
-
-
-          </div>
-
           {/* Detailed Invoice panel */}
           <div className="bg-white p-6 rounded-3xl border border-brand-gold/15 shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 left-0 h-[2px] bg-brand-gold" />
@@ -462,7 +370,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
 
             <div className="p-3 bg-brand-gold-soft/50 rounded-2xl border border-brand-gold/10 mt-4 text-center">
               <p className="text-[11px] text-gray-500 leading-relaxed font-semibold">
-                * ملاحظة: بعد الضغط، ستنعكس الطلبية على نظامنا فوراً للتوصيل برأس السنة، كما تفضل بتحويلها للواتساب لتأكيد الاستلام والتواصل المباشر مع دعاء وبسمة!
+                * ملاحظة: بعد الضغط، ستنعكس الطلبية على نظامنا وسنتواصل معك فوراً على تطبيق واتساب لتأكيد الطلبية مع فريق العمل، المرجو إرسال «نعم» برسالة نصية لتأكيد و تحضير طلبك!
               </p>
             </div>
           </div>

@@ -34,6 +34,8 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
 
     // Map order status to starting steps
     let initialStep = 0;
+    if (selectedOrder.status === 'new') initialStep = -1;
+    if (selectedOrder.status === 'pending') initialStep = 0;
     if (selectedOrder.status === 'preparing') initialStep = 1;
     if (selectedOrder.status === 'on_way') initialStep = 2;
     if (selectedOrder.status === 'delivered') initialStep = 3;
@@ -44,28 +46,28 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
 
   const STAGES = [
     {
-      title: 'تم قبول طلبك',
-      desc: 'قام فريقنا باعتماد وقبول طلبك',
+      title: 'تم تأكيد الطلب',
+      desc: 'قام فريقنا باعتماد وتأكيد طلبك بنجاح',
       icon: '✓',
-      time: 'مكتمل'
+      time: 'معتمد'
     },
     {
       title: 'يتم تجهيز طلبك',
-      desc: 'نقوم بتجهيز العصائر بعد قبول طلبك لاستلامها طازجة وباردة',
+      desc: 'نقوم بتجهيز طلبك مباشرة بعد قبوله لاستلامه طازج وبارد',
       icon: '✓',
-      time: 'في طور التحضير'
+      time: 'تحضير'
     },
     {
       title: 'مغادرة المندوب والحفاظ على البرودة',
-      desc: 'وضع الطلبيات داخل الحقائب الحافظة للبرودة لضمان الطراوة',
+      desc: 'نقوم بوضع الطلبيات داخل الحقائب الحافظة للبرودة لحفظ وضمان جودتها',
       icon: '✓',
-      time: 'جاهز'
+      time: 'بالطريق'
     },
     {
       title: 'تم الإستلام بالصحة والراحة',
       desc: 'شكراً لك على استقبال طلبك من المندوب بالصحة والعافية، نتمنى زيارة موقعنا مرة أخرى',
       icon: '✓',
-      time: 'شكراً'
+      time: 'مكتمل'
     }
   ];
 
@@ -103,25 +105,25 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
         <div>
           <span className="text-xs font-bold text-brand-gold uppercase tracking-wider block mb-1">تحديث حي ومباشر</span>
           <h1 className="text-2xl md:text-3xl font-display font-black text-royal-purple flex items-center gap-2">
-            <Clock className="w-7 h-7 text-brand-purple-light animate-spin-slow" />
+            <Clock className="w-7 h-7 text-emerald-500 animate-spin-slow" />
             تتبع طلبيتك اللذيذة
           </h1>
         </div>
         
         {/* Orders list switcher if multiple */}
         {orders.length > 1 && (
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-2xl border border-gray-100">
-            <span className="text-xs text-gray-400 font-bold whitespace-nowrap">تبديل الطلب الحالي:</span>
+          <div className="flex items-center gap-2 bg-brand-purple px-4 py-2.5 rounded-2xl border border-brand-purple-light/20 shadow-md">
+            <span className="text-xs text-brand-gold font-black whitespace-nowrap">تبديل الطلب الحالي:</span>
             <select
               value={selectedOrder.id}
               onChange={(e) => {
                 const found = orders.find((o) => o.id === e.target.value);
                 if (found) setSelectedOrder(found);
               }}
-              className="text-xs font-bold text-brand-purple outline-none bg-transparent"
+              className="text-xs font-bold text-white outline-none bg-transparent cursor-pointer font-sans"
             >
               {orders.map((o) => (
-                <option key={o.id} value={o.id}>
+                <option key={o.id} value={o.id} className="text-brand-purple bg-white">
                   {o.id} -- ({o.total} DH)
                 </option>
               ))}
@@ -137,12 +139,12 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
           
           {/* Main Visual Header info */}
           <div className="glass-panel p-6 rounded-3xl bg-white/90 border border-brand-gold/15 shadow-md text-align-start relative overflow-hidden">
-            <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-brand-gold via-brand-purple-light to-brand-gold" />
+            <div className="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-brand-gold via-emerald-500 to-brand-gold" />
             
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <span className="text-xs text-gray-400 block font-semibold">رقم التتبع التعريفي</span>
-                <span className="text-lg font-black text-royal-purple">{selectedOrder.id}</span>
+                <span className="text-lg font-black text-rose-950 font-mono">{selectedOrder.id}</span>
               </div>
 
               <div>
@@ -161,10 +163,10 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
             <div className={`mt-4 pt-4 border-t border-gray-100 p-4 rounded-2xl flex items-center justify-between ${
               selectedOrder.status === 'cancelled'
                 ? 'bg-rose-50 text-rose-700 border border-rose-100'
-                : 'bg-brand-purple-soft/30'
+                : 'bg-emerald-50/40 border border-emerald-100/50'
             }`}>
               <span className={`text-xs font-bold flex items-center gap-1.5 font-sans ${
-                selectedOrder.status === 'cancelled' ? 'text-rose-700' : 'text-brand-purple-light'
+                selectedOrder.status === 'cancelled' ? 'text-rose-700' : 'text-emerald-700'
               }`}>
                 {selectedOrder.status === 'cancelled' ? (
                   <ShieldAlert className="w-4 h-4 text-rose-600 animate-pulse" />
@@ -172,7 +174,8 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
                   <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow" />
                 )}
                 الحالة المباشرة: {
-                  selectedOrder.status === 'pending' ? 'تم قبول طلبك ومعتمد' :
+                  selectedOrder.status === 'new' ? 'تم تسجيل طلبك ونحن بصدد مراجعته' :
+                  selectedOrder.status === 'pending' ? 'تم تأكيد طلبك ومعتمد' :
                   selectedOrder.status === 'preparing' ? 'جاري تحضير وتعبئة مكونات الفواكه' :
                   selectedOrder.status === 'on_way' ? 'غادر المندوب ومسرع بالطريق إليك' :
                   selectedOrder.status === 'cancelled' ? 'عذراً، تم إلغاء هذا الطلب من إدارة المتجر ❌' :
@@ -213,7 +216,7 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
                           isCompleted 
                             ? 'bg-emerald-500 text-white shadow-md shadow-emerald-100' 
                             : isCurrent 
-                              ? 'bg-brand-purple text-white shadow-md shadow-brand-purple/20 ring-4 ring-brand-purple-soft' 
+                              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20 ring-4 ring-emerald-50' 
                               : 'bg-gray-100 text-gray-400'
                         }`}>
                           {isCompleted ? '✓' : stage.icon}
@@ -222,7 +225,7 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
                         <div className="flex-1">
                           <div className="flex items-center justify-between gap-2">
                             <h4 className={`font-bold text-base transition-colors ${
-                              isCompleted ? 'text-emerald-700' : isCurrent ? 'text-royal-purple' : 'text-gray-400'
+                              isCompleted ? 'text-emerald-700' : isCurrent ? 'text-emerald-800 font-extrabold' : 'text-gray-400'
                             }`}>
                               {stage.title}
                             </h4>
@@ -230,7 +233,7 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
                               isCompleted 
                                 ? 'bg-emerald-50 text-emerald-600' 
                                 : isCurrent 
-                                  ? 'bg-brand-purple-soft text-brand-purple animate-pulse' 
+                                  ? 'bg-emerald-50 text-emerald-700 animate-pulse' 
                                   : 'bg-gray-50 text-gray-400'
                             }`}>
                               {stage.time}
@@ -335,23 +338,15 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
             </div>
 
             {/* Direct call support buttons */}
-            <div className="grid grid-cols-2 gap-2 mt-4 pt-2">
+            <div className="flex justify-center mt-4 pt-2">
               <a
                 href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2 border border-emerald-100 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                className="w-full max-w-[180px] p-2 border border-emerald-100 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>فريق الدعم</span>
-              </a>
-
-              <a
-                href={`tel:${siteSettings?.whatsappNumber || '0705908383'}`}
-                className="p-2 border border-brand-purple-soft rounded-xl bg-brand-purple-soft/30 hover:bg-brand-purple-soft text-brand-purple text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span>اتصال بالمندوب</span>
               </a>
             </div>
           </div>

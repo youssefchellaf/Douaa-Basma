@@ -29,20 +29,9 @@ export const Header: React.FC<HeaderProps> = ({
   siteSettings,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [logoClicks, setLogoClicks] = useState({ count: 0, lastClick: 0 });
 
   const handleLogoClick = () => {
     onSetView('home');
-    const now = Date.now();
-    setLogoClicks((prev) => {
-      const isSoon = now - prev.lastClick < 3000;
-      const nextCount = isSoon ? prev.count + 1 : 1;
-      if (nextCount >= 5) {
-        onUnlockAdmin();
-        return { count: 0, lastClick: 0 };
-      }
-      return { count: nextCount, lastClick: now };
-    });
   };
 
   const baseNavLinks = [

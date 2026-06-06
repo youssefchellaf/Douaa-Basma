@@ -410,42 +410,7 @@ export default function App() {
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
-    const defaultOrders: Order[] = [
-      {
-        id: "DB-74839",
-        fullName: "أمينة المنصوري",
-        phone: "0612345678",
-        address: "إقامة الأندلس، شقة 5، طنجة",
-        notes: "يرجى تقرير السكر في عصير برتقال طبيعي",
-        deliveryArea: "وسط المدينة",
-        deliveryCost: 5,
-        items: [
-          {product: PRODUCTS[0], quantity: 2}, // Zaza
-          {product: PRODUCTS[8], quantity: 1}  // Flan
-        ],
-        subtotal: 65,
-        total: 70,
-        status: "delivered",
-        date: "2026-05-20 18:30"
-      },
-      {
-        id: "DB-49204",
-        fullName: "ياسين التازي",
-        phone: "0765432109",
-        address: "حي كنديسة، فيلا 22، الفنيدق",
-        notes: "زيادة اللوز على فلان كراميل",
-        deliveryArea: "المناطق المجاورة",
-        deliveryCost: 10,
-        items: [
-          {product: PRODUCTS[1], quantity: 2}, // Avocado
-          {product: PRODUCTS[4], quantity: 1}  // Dragon
-        ],
-        subtotal: 75,
-        total: 85,
-        status: "preparing",
-        date: "2026-05-21 02:15"
-      }
-    ];
+    const defaultOrders: Order[] = [];
 
     try {
       const saved = localStorage.getItem('db_orders');
@@ -945,9 +910,18 @@ export default function App() {
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {cartItems.length === 0 ? (
                   <div className="text-center py-20 text-gray-400">
-                    <span className="block text-4xl mb-2">🍹</span>
-                    <p className="text-sm font-bold">لا توجد حبات مضافة بعد.</p>
-                    <p className="text-xs mt-1">دعنا نلقي نظرة على زعزع أو فلان كراميل!</p>
+                    <button
+                      onClick={() => {
+                        handleSetView('home');
+                        setIsSidebarCartOpen(false);
+                      }}
+                      className="mx-auto w-12 h-12 rounded-full bg-brand-cream border-2 border-brand-gold/30 flex items-center justify-center text-brand-gold mb-3 transition-all hover:scale-110 cursor-pointer hover:bg-brand-gold-soft hover:border-brand-gold/50 active:scale-95"
+                      title="استعرض قائمة المنتجات"
+                    >
+                      <Plus className="w-6 h-6 stroke-[3]" />
+                    </button>
+                    <p className="text-sm font-bold">لم تقم بإضافة طلب بعد</p>
+                    <p className="text-xs mt-1">إلقي نظرة على قائمة العصائر والتحليات الرائعة والطازجة</p>
                   </div>
                 ) : (
                   cartItems.map((item, idx) => (
@@ -1042,25 +1016,27 @@ export default function App() {
             {/* FILTERING BAR & PRODUCTS GRID */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 font-sans">
               
-              <div className="flex flex-col items-center text-center gap-5 mb-8" id="products-listing-title">
-                <div className="flex flex-col items-center text-center">
-                  <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block mb-1">صنع برقة وطزاجة</span>
-                  <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple flex flex-wrap items-center justify-center gap-2 text-center">
-                    <Sparkles className="text-brand-gold animate-bounce w-5 h-5" />
+              <div className="flex flex-col items-start text-right md:items-center md:text-center gap-5 mb-8" id="products-listing-title">
+                <div className="flex flex-col items-start text-right md:items-center md:text-center w-full">
+                  <div className="flex items-center gap-2 mb-1 justify-start md:justify-center w-full">
+                    <Sparkles className="text-brand-gold animate-bounce w-4.5 h-4.5" />
+                    <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block text-right md:text-center">صنع برقة وطزاجة</span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple text-right md:text-center">
                     قائمة مشروباتنا وتحليّاتنا المدهشة
                   </h2>
-                  <p className="text-gray-500 text-sm mt-1">تصفح وجرب أفخر ما تحضره يدا دعاء وبسمة بالمنزل.</p>
+                  <p className="text-gray-500 text-sm mt-1 text-right md:text-center">تصفح وجرب أفخر ما تحضره يدا دعاء وبسمة بالمنزل.</p>
                 </div>
 
                 {/* Search text inputs */}
-                <div className="relative w-full max-w-md mx-auto">
+                <div className="relative w-full max-w-md md:mx-auto">
                   <Search className="absolute right-3.5 top-3 w-4.5 h-4.5 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="ابحث عن: (زعزع، عصير الدراغون، عصير الأفوكادو، فلان فنزويلي،..."
-                    className="w-full pr-10 pl-4 py-2.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs bg-white/70 backdrop-blur-md shadow-sm text-center"
+                    className="w-full pr-10 pl-4 py-2.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs bg-white/70 backdrop-blur-md shadow-sm text-right md:text-center"
                   />
                   {searchQuery && (
                     <button

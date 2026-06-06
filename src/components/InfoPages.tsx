@@ -248,8 +248,8 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab, siteSettings })
         
         <div className="text-center mb-10">
           <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block mb-1">نسعد بخدمتكم</span>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-royal-purple flex items-center justify-center gap-2">
-            <Phone className="w-6 h-6 text-brand-gold" />
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-display font-bold text-royal-purple flex items-center justify-center gap-2 whitespace-nowrap">
+            <Phone className="w-5 h-5 md:w-6 md:h-6 text-brand-gold flex-shrink-0" />
             تواصلوا معنا الآن
           </h1>
           <p className="text-gray-500 text-sm mt-2">جاهزون للرد على استفساراتكم وحجز طلبياتكم وأفراحكم الخاصة</p>

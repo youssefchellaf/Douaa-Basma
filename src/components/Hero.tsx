@@ -56,7 +56,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
           className="max-w-xl md:max-w-3xl md:mx-auto w-full space-y-2.5 text-right md:text-center"
         >
           {/* Text and title info inside an elegant glassmorphic frosted-glass frame */}
-          <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md p-5 sm:p-6 rounded-[28px] border border-white/40 dark:border-neutral-800/40 shadow-lg shadow-royal-purple/5 space-y-2.5 w-full flex flex-col items-end md:items-center text-right md:text-center">
+          <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md p-5 sm:p-6 rounded-[28px] border border-white/40 dark:border-neutral-800/40 shadow-lg shadow-royal-purple/5 space-y-2.5 w-full flex flex-col items-start md:items-center text-right md:text-center">
             {/* Sparkly sub-badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-purple/15 border border-brand-purple/20 text-brand-purple text-xs md:text-sm font-bold">
               <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow animate-pulse" />

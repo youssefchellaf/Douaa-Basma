@@ -34,6 +34,24 @@ const getProductsLookup = (): Product[] => {
   return PRODUCTS;
 };
 
+const footerGoldParticles = [
+  { id: 1, left: "7%", top: "15%", size: 4, duration: 6, delay: 0 },
+  { id: 2, left: "18%", top: "45%", size: 6, duration: 8, delay: 0.8 },
+  { id: 3, left: "28%", top: "75%", size: 3, duration: 5, delay: 0.3 },
+  { id: 4, left: "38%", top: "25%", size: 5, duration: 7, delay: 1.5 },
+  { id: 5, left: "48%", top: "85%", size: 4, duration: 9, delay: 1.1 },
+  { id: 6, left: "58%", top: "35%", size: 5, duration: 6, delay: 0.1 },
+  { id: 7, left: "68%", top: "60%", size: 3, duration: 8, delay: 2.0 },
+  { id: 8, left: "78%", top: "10%", size: 6, duration: 7, delay: 0.7 },
+  { id: 9, left: "88%", top: "80%", size: 4, duration: 9, delay: 0.5 },
+  { id: 10, left: "94%", top: "40%", size: 5, duration: 5, delay: 1.0 },
+  { id: 11, left: "12%", top: "80%", size: 3, duration: 7, delay: 1.8 },
+  { id: 12, left: "32%", top: "60%", size: 5, duration: 9, delay: 0.2 },
+  { id: 13, left: "52%", top: "15%", size: 4, duration: 6, delay: 1.4 },
+  { id: 14, left: "72%", top: "90%", size: 5, duration: 8, delay: 0.1 },
+  { id: 15, left: "86%", top: "25%", size: 3, duration: 7, delay: 1.2 },
+];
+
 export default function App() {
   // --- STATE SYSTEM ---
   const [currentView, setCurrentView] = useState<string>('home');
@@ -1222,6 +1240,34 @@ export default function App() {
       {/* FOOTER BLOCK (Always Mounted) */}
       <footer className="bg-royal-purple text-white relative overflow-hidden pt-12 pb-8 border-t border-brand-gold/30">
         <div className="absolute inset-0 arabesque-pattern opacity-5 pointer-events-none" />
+        
+        {/* Floating Gold Particles in the Background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden mix-blend-screen">
+          {footerGoldParticles.map((particle) => (
+            <motion.div
+              key={particle.id}
+              className="absolute rounded-full bg-amber-400 shadow-[0_0_8px_rgba(234,179,8,0.8)]"
+              style={{
+                left: particle.left,
+                top: particle.top,
+                width: particle.size,
+                height: particle.size,
+              }}
+              animate={{
+                y: [0, -35, 0],
+                x: [0, 15, 0],
+                opacity: [0.15, 0.85, 0.15],
+                scale: [1, 1.3, 0.8],
+              }}
+              transition={{
+                duration: particle.duration,
+                repeat: Infinity,
+                delay: particle.delay,
+                ease: "easeInOut",
+              }}
+            />
+          ))}
+        </div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 font-sans">
           

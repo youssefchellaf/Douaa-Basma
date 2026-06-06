@@ -1240,12 +1240,12 @@ export default function App() {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row md:justify-between items-center md:items-start gap-12 text-center md:text-right">
+          <div className="flex flex-col md:flex-row md:justify-center items-center md:items-start gap-12 md:gap-x-24 lg:gap-x-32 text-center">
             
-            {/* Social channels icons row (Left on desktop, bottom on mobile) */}
-            <div className="flex flex-col items-center md:items-start text-center md:text-right w-full md:w-auto order-2 md:order-1">
+            {/* Social channels icons row (Left/First on desktop, bottom/Second on mobile) */}
+            <div className="flex flex-col items-center text-center w-full md:w-auto order-2 md:order-1">
               <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 md:px-0 inline-block">مواقع التواصل الاجتماعي</h4>
-              <div className="flex gap-2.5 pt-1 justify-center md:justify-start">
+              <div className="flex gap-2.5 pt-1 justify-center">
                 <a
                   href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
                   target="_blank"
@@ -1278,11 +1278,11 @@ export default function App() {
               </div>
             </div>
 
-            {/* Links map segment (Right on desktop, top on mobile) */}
-            <div className="flex flex-col items-center md:items-start text-center md:text-right w-full md:w-auto order-1 md:order-2">
+            {/* Links map segment (Right/Second on desktop, top/First on mobile) */}
+            <div className="flex flex-col items-center text-center w-full md:w-auto order-1 md:order-2">
               <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 md:px-0 inline-block">تصفح المتجر من خلال</h4>
               <ul className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs text-gray-300 max-w-sm w-full md:max-w-none md:w-auto">
-                <li className="text-right">
+                <li className="text-center">
                   <a 
                     href="#/" 
                     onClick={(e) => { e.preventDefault(); handleSetView('home'); }} 
@@ -1291,7 +1291,7 @@ export default function App() {
                     الرئيسية وقائمة المنتجات
                   </a>
                 </li>
-                <li className="text-right">
+                <li className="text-center">
                   <a 
                     href="#/about-us" 
                     onClick={(e) => { e.preventDefault(); handleSetView('about'); }} 
@@ -1300,7 +1300,7 @@ export default function App() {
                     من نحن وقصتنا
                   </a>
                 </li>
-                <li className="text-right">
+                <li className="text-center">
                   <a 
                     href="#/delivery" 
                     onClick={(e) => { e.preventDefault(); handleSetView('delivery'); }} 
@@ -1309,7 +1309,7 @@ export default function App() {
                     معلومات التوصيل والمدن
                   </a>
                 </li>
-                <li className="text-right">
+                <li className="text-center">
                   <a 
                     href="#/contact-us" 
                     onClick={(e) => { e.preventDefault(); handleSetView('contact'); }} 

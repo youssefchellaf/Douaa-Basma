@@ -53,10 +53,10 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
           initial={{ opacity: 0, x: 45 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-xl md:max-w-full w-full space-y-2.5 text-right"
+          className="max-w-xl md:max-w-3xl md:mx-auto w-full space-y-2.5 text-right md:text-center"
         >
           {/* Text and title info inside an elegant glassmorphic frosted-glass frame */}
-          <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md p-5 sm:p-6 rounded-[28px] border border-white/40 dark:border-neutral-800/40 shadow-lg shadow-royal-purple/5 space-y-2.5 w-full">
+          <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md p-5 sm:p-6 rounded-[28px] border border-white/40 dark:border-neutral-800/40 shadow-lg shadow-royal-purple/5 space-y-2.5 w-full flex flex-col items-end md:items-center text-right md:text-center">
             {/* Sparkly sub-badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-purple/15 border border-brand-purple/20 text-brand-purple text-xs md:text-sm font-bold">
               <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow animate-pulse" />
@@ -99,9 +99,9 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
       {/* Overlapping trust features bar - "لماذا نحن" */}
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-0 sm:-mt-8">
         
-        <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border border-white/40 dark:border-neutral-800/40 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-align-start font-sans">
+        <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border border-white/40 dark:border-neutral-800/40 grid grid-cols-2 md:grid-cols-4 gap-6 text-center font-sans">
           
-          <div className="flex flex-col items-center md:items-start text-center md:text-right">
+          <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-brand-gold-soft text-brand-gold flex items-center justify-center mb-3">
               <Milk className="w-6 h-6" />
             </div>
@@ -109,7 +109,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
             <p className="text-[11px] text-gray-500 mt-1">فواكه منتقاة بعناية لضمان أعلى فائدة وطزاجة مطلقة.</p>
           </div>
 
-          <div className="flex flex-col items-center md:items-start text-center md:text-right">
+          <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-brand-purple-soft/60 text-brand-purple flex items-center justify-center mb-3">
               <ChefHat className="w-6 h-6" />
             </div>
@@ -117,7 +117,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
             <p className="text-[11px] text-gray-500 mt-1">شغف وحرفية عائلية نسائية فائقة الجودة والنظافة والتعقيم.</p>
           </div>
 
-          <div className="flex flex-col items-center md:items-start text-center md:text-right">
+          <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-brand-gold-soft text-brand-gold flex items-center justify-center mb-3">
               <ShieldCheck className="w-6 h-6" />
             </div>
@@ -125,7 +125,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
             <p className="text-[11px] text-gray-500 mt-1">خالٍ تام من المنكهات الصناعية والمواد الحافظة الكيماوية.</p>
           </div>
 
-          <div className="flex flex-col items-center md:items-start text-center md:text-right">
+          <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-brand-purple-soft/60 text-brand-purple flex items-center justify-center mb-3">
               <Heart className="w-6 h-6 text-brand-purple-light animate-pulse-slow" />
             </div>

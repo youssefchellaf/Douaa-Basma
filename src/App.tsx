@@ -1042,25 +1042,25 @@ export default function App() {
             {/* FILTERING BAR & PRODUCTS GRID */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 font-sans">
               
-              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 text-align-start" id="products-listing-title">
-                <div>
+              <div className="flex flex-col items-center text-center gap-5 mb-8" id="products-listing-title">
+                <div className="flex flex-col items-center text-center">
                   <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block mb-1">صنع برقة وطزاجة</span>
-                  <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple inline-flex items-center gap-2">
-                    <Sparkles className="text-brand-gold animate-bounce" />
+                  <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple flex flex-wrap items-center justify-center gap-2 text-center">
+                    <Sparkles className="text-brand-gold animate-bounce w-5 h-5" />
                     قائمة مشروباتنا وتحليّاتنا المدهشة
                   </h2>
                   <p className="text-gray-500 text-sm mt-1">تصفح وجرب أفخر ما تحضره يدا دعاء وبسمة بالمنزل.</p>
                 </div>
 
                 {/* Search text inputs */}
-                <div className="relative w-full md:w-80">
+                <div className="relative w-full max-w-md mx-auto">
                   <Search className="absolute right-3.5 top-3 w-4.5 h-4.5 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="ابحث عن: (زعزع، عصير الدراغون، عصير الأفوكادو، فلان فنزويلي،..."
-                    className="w-full pr-10 pl-4 py-2.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs bg-white/70 backdrop-blur-md shadow-sm"
+                    className="w-full pr-10 pl-4 py-2.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs bg-white/70 backdrop-blur-md shadow-sm text-center"
                   />
                   {searchQuery && (
                     <button

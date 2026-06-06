@@ -103,8 +103,9 @@ export default function App() {
         targetPath = '/' + targetPath;
       }
       try {
-        if (window.location.pathname !== targetPath) {
-          window.history.replaceState(null, '', targetPath);
+        const finalUrl = '#' + targetPath;
+        if (window.location.hash !== finalUrl) {
+          window.history.replaceState(null, '', finalUrl);
         }
       } catch (e) {
         console.error("Failed to update history state:", e);
@@ -133,8 +134,9 @@ export default function App() {
     }
 
     try {
-      if (window.location.pathname !== targetPath) {
-        window.history.pushState(null, '', targetPath);
+      const finalUrl = '#' + targetPath;
+      if (window.location.hash !== finalUrl) {
+        window.history.pushState(null, '', finalUrl);
       }
     } catch (e) {
       console.error("Failed to update history state:", e);
@@ -145,35 +147,49 @@ export default function App() {
   useEffect(() => {
     const handleUrlChange = () => {
       const path = window.location.pathname;
-      const hash = window.location.hash.replace('#', '');
+      const hash = window.location.hash;
 
       const checkPath = (configuredPath: string | undefined, defaultVal: string) => {
         const val = configuredPath || defaultVal;
-        const cleanConf = val.startsWith('/') ? val : '/' + val;
-        const cleanConfNoSlash = cleanConf.replace(/^\//, '');
-        return path === cleanConf || hash === cleanConf || hash === cleanConfNoSlash;
+        
+        // Clean paths: remove # and leading/trailing slashes
+        const cleanConf = val.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
+        const cleanPath = path.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
+        const cleanHash = hash.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
+
+        return cleanPath === cleanConf || cleanHash === cleanConf;
       };
 
-      if (checkPath(siteSettings.aboutPath, '/about-us')) {
+      if (checkPath(siteSettings.aboutPath, 'about-us')) {
         setCurrentView('about');
-      } else if (checkPath(siteSettings.deliveryPath, '/delivery')) {
+      } else if (checkPath(siteSettings.deliveryPath, 'delivery')) {
         setCurrentView('delivery');
-      } else if (checkPath(siteSettings.contactPath, '/contact-us')) {
+      } else if (checkPath(siteSettings.contactPath, 'contact-us')) {
         setCurrentView('contact');
-      } else if (checkPath(siteSettings.trackPath, '/track')) {
+      } else if (checkPath(siteSettings.trackPath, 'track')) {
         setCurrentView('track');
-      } else if (checkPath(siteSettings.adminPath, '/admin')) {
+      } else if (checkPath(siteSettings.adminPath, 'admin')) {
         setCurrentView('admin');
         setIsAdminUnlocked(true);
         localStorage.setItem('db_admin_unlocked', 'true');
-      } else if (path === '/' || hash === '' || checkPath(siteSettings.homePath, '/')) {
-        setCurrentView('home');
+      } else {
+        const cleanPath = path.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
+        const cleanHash = hash.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
+        const cleanHome = (siteSettings.homePath || '/').replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
+
+        if (cleanPath === '' || cleanHash === '' || cleanPath === cleanHome || cleanHash === cleanHome) {
+          setCurrentView('home');
+        }
       }
     };
 
     handleUrlChange();
     window.addEventListener('popstate', handleUrlChange);
-    return () => window.removeEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
   }, [siteSettings]);
 
   useEffect(() => {
@@ -1228,10 +1244,42 @@ export default function App() {
           <div className="flex flex-col items-center justify-center">
             <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 inline-block">تصفح المتجر من خلال</h4>
             <ul className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-gray-300 w-full max-w-sm">
-              <li><button onClick={() => handleSetView('home')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">الرئيسية وقائمة المنتجات</button></li>
-              <li><button onClick={() => handleSetView('about')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">من نحن وقصتنا</button></li>
-              <li><button onClick={() => handleSetView('delivery')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">معلومات التوصيل والمدن</button></li>
-              <li><button onClick={() => handleSetView('contact')} className="hover:text-brand-gold transition-colors cursor-pointer text-center w-full">للاتصال بنا وطلب حجز</button></li>
+              <li>
+                <a 
+                  href="#/" 
+                  onClick={(e) => { e.preventDefault(); handleSetView('home'); }} 
+                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                >
+                  الرئيسية وقائمة المنتجات
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#/about-us" 
+                  onClick={(e) => { e.preventDefault(); handleSetView('about'); }} 
+                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                >
+                  من نحن وقصتنا
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#/delivery" 
+                  onClick={(e) => { e.preventDefault(); handleSetView('delivery'); }} 
+                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                >
+                  معلومات التوصيل والمدن
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#/contact-us" 
+                  onClick={(e) => { e.preventDefault(); handleSetView('contact'); }} 
+                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                >
+                  للاتصال بنا وطلب حجز
+                </a>
+              </li>
             </ul>
           </div>
 

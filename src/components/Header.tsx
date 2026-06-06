@@ -29,9 +29,20 @@ export const Header: React.FC<HeaderProps> = ({
   siteSettings,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [logoClicks, setLogoClicks] = useState({ count: 0, lastClick: 0 });
 
   const handleLogoClick = () => {
     onSetView('home');
+    const now = Date.now();
+    setLogoClicks((prev) => {
+      const isSoon = now - prev.lastClick < 3000;
+      const nextCount = isSoon ? prev.count + 1 : 1;
+      if (nextCount >= 5) {
+        onUnlockAdmin();
+        return { count: 0, lastClick: 0 };
+      }
+      return { count: nextCount, lastClick: now };
+    });
   };
 
   const baseNavLinks = [
@@ -120,10 +131,24 @@ export const Header: React.FC<HeaderProps> = ({
 
                         const isCurrent = currentView === link.view;
 
+                        let hrefPath = '#/';
+                        if (link.view === 'about') hrefPath = '#' + (siteSettings.aboutPath || '/about-us');
+                        else if (link.view === 'delivery') hrefPath = '#' + (siteSettings.deliveryPath || '/delivery');
+                        else if (link.view === 'contact') hrefPath = '#' + (siteSettings.contactPath || '/contact-us');
+                        else if (link.view === 'track') hrefPath = '#' + (siteSettings.trackPath || '/track');
+                        else if (link.view === 'admin') hrefPath = '#' + (siteSettings.adminPath || '/admin');
+                        else hrefPath = '#' + (siteSettings.homePath || '/');
+                        
+                        if (!hrefPath.startsWith('#/')) {
+                          hrefPath = hrefPath.replace('#', '#/');
+                        }
+
                         return (
-                          <button
+                          <a
                             key={link.view}
-                            onClick={() => {
+                            href={hrefPath}
+                            onClick={(e) => {
+                              e.preventDefault();
                               onSetView(link.view);
                               setIsDropdownOpen(false);
                             }}
@@ -155,7 +180,7 @@ export const Header: React.FC<HeaderProps> = ({
                                 {desc}
                               </span>
                             </div>
-                          </button>
+                          </a>
                         );
                       })}
                     </div>

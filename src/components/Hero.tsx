@@ -53,10 +53,10 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
           initial={{ opacity: 0, x: 45 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
-          className="max-w-xl space-y-2.5 text-right"
+          className="max-w-xl md:max-w-full w-full space-y-2.5 text-right"
         >
           {/* Text and title info inside an elegant glassmorphic frosted-glass frame */}
-          <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md p-5 sm:p-6 rounded-[28px] border border-white/40 dark:border-neutral-800/40 shadow-lg shadow-royal-purple/5 space-y-2.5">
+          <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md p-5 sm:p-6 rounded-[28px] border border-white/40 dark:border-neutral-800/40 shadow-lg shadow-royal-purple/5 space-y-2.5 w-full">
             {/* Sparkly sub-badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-purple/15 border border-brand-purple/20 text-brand-purple text-xs md:text-sm font-bold">
               <Sparkles className="w-4 h-4 text-brand-gold animate-pulse-slow animate-pulse" />
@@ -76,7 +76,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
           </div>
 
           {/* Action buttons completely outside the card on mobile */}
-          <div className="flex flex-col sm:flex-row-reverse gap-3 pt-3 pb-3 sm:pb-0 items-center sm:items-center">
+          <div className="flex flex-col sm:flex-row-reverse md:flex-row gap-3 pt-3 pb-3 sm:pb-0 items-center sm:items-center">
             <button
               onClick={onOrderNowClick}
               className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30 active:scale-95 transition-all text-sm cursor-pointer group"
@@ -99,7 +99,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
       {/* Overlapping trust features bar - "لماذا نحن" */}
       <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-0 sm:-mt-8">
         
-        <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border border-white/40 dark:border-neutral-800/40 grid grid-cols-2 md:grid-cols-5 gap-6 text-center text-align-start font-sans">
+        <div className="bg-white/30 dark:bg-black/20 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl border border-white/40 dark:border-neutral-800/40 grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-align-start font-sans">
           
           <div className="flex flex-col items-center md:items-start text-center md:text-right">
             <div className="w-12 h-12 rounded-2xl bg-brand-gold-soft text-brand-gold flex items-center justify-center mb-3">
@@ -133,10 +133,13 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
             <p className="text-[11px] text-gray-500 mt-1">توليفات غنية ومميزة تمزج الحلويات التقليدية مع المشروبات العصرية.</p>
           </div>
 
-          <div className="flex flex-col items-center md:items-start text-center md:text-right col-span-2 md:col-span-1 border-t md:border-t-0 border-gray-100 pt-4 md:pt-0">
-            <div className="w-full h-full flex flex-col justify-center text-center md:text-right">
-              <span className="text-xl font-black text-brand-green">التوصيل ابتداءا من «0» درهم</span>
-              <p className="text-[10px] text-gray-400 mt-1">
+          <div className="col-span-2 md:col-span-4 border-t border-gray-100 dark:border-neutral-800/40 pt-5 mt-2">
+            <div className="w-full flex flex-col items-center justify-center text-center">
+              <span className="text-xl md:text-2xl font-black text-brand-green flex items-center gap-2 justify-center">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse" />
+                التوصيل ابتداءا من «0» درهم
+              </span>
+              <p className="text-xs md:text-[13px] text-gray-500 dark:text-gray-400 mt-1.5 max-w-2xl leading-relaxed font-semibold">
                 توصيل فائق السرعة مع الحفاظ التام على الطازجة والبرودة، ومجاني للطلبات فوق 100 DH و طلبات الأحياء القريبة.
               </p>
             </div>

@@ -1238,7 +1238,7 @@ export default function App() {
       />
 
       {/* FOOTER BLOCK (Always Mounted) */}
-      <footer className="bg-royal-purple text-white relative overflow-hidden pt-12 pb-8 border-t border-brand-gold/30">
+      <footer className="bg-royal-purple text-white relative overflow-hidden pt-10 pb-6 border-t border-brand-gold/30">
         <div className="absolute inset-0 arabesque-pattern opacity-5 pointer-events-none" />
         
         {/* Floating Gold Particles in the Background */}
@@ -1272,11 +1272,11 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 font-sans">
           
           {/* Logo & description (placed top center) */}
-          <div className="space-y-4 mb-10 text-center border-b border-brand-gold/10 pb-8">
+          <div className="space-y-2.5 mb-6 text-center border-b border-brand-gold/10 pb-6">
             <div className="flex items-center justify-center gap-1.5 animate-pulse-slow">
               <span 
                 onClick={() => handleSetView('home')}
-                className="text-2xl md:text-4xl font-display font-black text-brand-gold cursor-pointer transition-all duration-300 hover:scale-105 hover:text-brand-gold-light drop-shadow-sm select-none"
+                className="text-2xl md:text-3xl font-display font-black text-brand-gold cursor-pointer transition-all duration-300 hover:scale-105 hover:text-brand-gold-light drop-shadow-sm select-none"
               >
                 {siteSettings?.storeName || "Douaa & Basma"}
               </span>
@@ -1285,13 +1285,56 @@ export default function App() {
               {siteSettings?.storeDescription || "أرقى مشروع محلي مغربي لتقديم العصائر و التحليات المنزلية. و نسعى دائماً لترك بصمة من المتعة والفرح بمناسباتكم الخاصة والعامة."}
             </p>
           </div>
-
-          <div className="flex flex-col md:flex-row md:justify-center items-center md:items-start gap-12 md:gap-x-24 lg:gap-x-32 text-center">
+ 
+          <div className="flex flex-col md:flex-row md:justify-center items-center md:items-start gap-8 md:gap-x-16 lg:gap-x-24 text-center">
             
-            {/* Social channels icons row (Left/First on desktop, bottom/Second on mobile) */}
-            <div className="flex flex-col items-center text-center w-full md:w-auto order-2 md:order-1">
-              <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 md:px-0 inline-block">مواقع التواصل الاجتماعي</h4>
-              <div className="flex gap-2.5 pt-1 justify-center">
+            {/* Links map segment (First/Left-to-Right on desktop, top/First on mobile) */}
+            <div className="flex flex-col items-center text-center w-full md:w-auto order-1">
+              <h4 className="font-bold text-gray-100 text-sm mb-2 border-b-2 border-brand-gold/60 pb-0.5 px-4 md:px-0 inline-block">تصفح المتجر من خلال</h4>
+              <ul className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-300 max-w-sm w-full md:max-w-none md:w-auto">
+                <li className="text-right md:text-center">
+                  <a 
+                    href="#/" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('home'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    الرئيسية وقائمة المنتجات
+                  </a>
+                </li>
+                <li className="text-right md:text-center">
+                  <a 
+                    href="#/about-us" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('about'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    من نحن وقصتنا
+                  </a>
+                </li>
+                <li className="text-right md:text-center">
+                  <a 
+                    href="#/delivery" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('delivery'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    معلومات التوصيل والمدن
+                  </a>
+                </li>
+                <li className="text-right md:text-center">
+                  <a 
+                    href="#/contact-us" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('contact'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    للاتصال بنا وطلب حجز
+                  </a>
+                </li>
+              </ul>
+            </div>
+ 
+            {/* Social channels icons row (Second/Right-to-Left on desktop, bottom/Second on mobile) */}
+            <div className="flex flex-col items-center text-center w-full md:w-auto order-2">
+              <h4 className="font-bold text-gray-100 text-sm mb-2 border-b-2 border-brand-gold/60 pb-0.5 px-4 md:px-0 inline-block">مواقع التواصل الاجتماعي</h4>
+              <div className="flex gap-2 justify-center">
                 <a
                   href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
                   target="_blank"
@@ -1301,7 +1344,7 @@ export default function App() {
                 >
                   <MessageCircle className="w-4.5 h-4.5" />
                 </a>
-
+ 
                 <a
                   href={siteSettings?.instagramUrl || "https://instagram.com/douaabasma_1"}
                   target="_blank"
@@ -1311,7 +1354,7 @@ export default function App() {
                 >
                   <Instagram className="w-4.5 h-4.5" />
                 </a>
-
+ 
                 <a
                   href={siteSettings?.facebookUrl || "https://m.facebook.com/douaabasma01/"}
                   target="_blank"
@@ -1323,56 +1366,13 @@ export default function App() {
                 </a>
               </div>
             </div>
-
-            {/* Links map segment (Right/Second on desktop, top/First on mobile) */}
-            <div className="flex flex-col items-center text-center w-full md:w-auto order-1 md:order-2">
-              <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 md:px-0 inline-block">تصفح المتجر من خلال</h4>
-              <ul className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs text-gray-300 max-w-sm w-full md:max-w-none md:w-auto">
-                <li className="text-center">
-                  <a 
-                    href="#/" 
-                    onClick={(e) => { e.preventDefault(); handleSetView('home'); }} 
-                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
-                  >
-                    الرئيسية وقائمة المنتجات
-                  </a>
-                </li>
-                <li className="text-center">
-                  <a 
-                    href="#/about-us" 
-                    onClick={(e) => { e.preventDefault(); handleSetView('about'); }} 
-                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
-                  >
-                    من نحن وقصتنا
-                  </a>
-                </li>
-                <li className="text-center">
-                  <a 
-                    href="#/delivery" 
-                    onClick={(e) => { e.preventDefault(); handleSetView('delivery'); }} 
-                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
-                  >
-                    معلومات التوصيل والمدن
-                  </a>
-                </li>
-                <li className="text-center">
-                  <a 
-                    href="#/contact-us" 
-                    onClick={(e) => { e.preventDefault(); handleSetView('contact'); }} 
-                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
-                  >
-                    للاتصال بنا وطلب حجز
-                  </a>
-                </li>
-              </ul>
-            </div>
-
+ 
           </div>
-
+ 
         </div>
-
+ 
         {/* Copy credits */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 border-t border-brand-gold/10 pt-6 mt-8 text-center text-[11px] text-gray-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 border-t border-brand-gold/10 pt-4 mt-6 text-center text-[11px] text-gray-400">
           <p>© {new Date().getFullYear()} {siteSettings?.footerCredits || "جميع الحقوق محفوظة لعلامة"} <span className="cursor-pointer hover:text-brand-gold duration-200 font-bold" onClick={handleFooterSecretClick}>{siteSettings?.storeName || "Douaa & Basma"}</span></p>
         </div>
       </footer>

@@ -76,10 +76,10 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
           </div>
 
           {/* Action buttons completely outside the card on mobile */}
-          <div className="flex flex-col sm:flex-row-reverse md:flex-row gap-3 pt-3 pb-3 sm:pb-0 items-center sm:items-center">
+          <div className="flex flex-col sm:flex-row gap-4 pt-4 pb-3 sm:pb-0 items-center justify-center w-full">
             <button
               onClick={onOrderNowClick}
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30 active:scale-95 transition-all text-sm cursor-pointer group"
+              className="w-full sm:w-72 px-8 py-4 bg-gradient-to-r from-brand-purple to-royal-purple hover:from-brand-purple-light hover:to-brand-purple text-white font-black rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-brand-purple/30 active:scale-95 transition-all text-sm cursor-pointer group"
             >
               <span>تصفح قائمة العصائر و التحليات</span>
               <ArrowDown className="w-4 h-4 text-white group-hover:translate-y-1 transition-transform" />
@@ -87,9 +87,9 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
 
             <button
               onClick={onExploreStory}
-              className="w-2/3 sm:w-auto px-4 py-3 bg-brand-gold hover:bg-brand-gold-dark text-white font-black rounded-xl flex items-center justify-center text-xs transition-all cursor-pointer whitespace-nowrap shadow-md active:scale-95"
+              className="w-full sm:w-72 px-8 py-4 bg-brand-gold hover:bg-brand-gold-dark text-white font-black rounded-2xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-md active:scale-95 text-sm"
             >
-              اقرأ قصة مشروعنا ونشأتنا
+              <span>اقرأ قصة مشروعنا ونشأتنا</span>
             </button>
           </div>
         </motion.div>
@@ -135,7 +135,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
 
           <div className="col-span-2 md:col-span-4 border-t border-gray-100 dark:border-neutral-800/40 pt-5 mt-2">
             <div className="w-full flex flex-col items-center justify-center text-center">
-              <span className="text-xl md:text-2xl font-black text-brand-green flex items-center gap-2 justify-center">
+              <span className="text-base sm:text-xl md:text-2xl font-black text-brand-green flex items-center gap-2 justify-center">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-brand-green animate-pulse" />
                 التوصيل ابتداءا من «0» درهم
               </span>

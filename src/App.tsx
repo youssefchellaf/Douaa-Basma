@@ -1223,100 +1223,104 @@ export default function App() {
       <footer className="bg-royal-purple text-white relative overflow-hidden pt-12 pb-8 border-t border-brand-gold/30">
         <div className="absolute inset-0 arabesque-pattern opacity-5 pointer-events-none" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 text-center font-sans">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 font-sans">
           
-          {/* Logo segment */}
-          <div className="space-y-4 flex flex-col items-center justify-center">
-            <div className="flex items-center justify-center gap-1.5">
+          {/* Logo & description (placed top center) */}
+          <div className="space-y-4 mb-10 text-center border-b border-brand-gold/10 pb-8">
+            <div className="flex items-center justify-center gap-1.5 animate-pulse-slow">
               <span 
                 onClick={() => handleSetView('home')}
-                className="text-2xl md:text-3xl font-display font-black text-brand-gold cursor-pointer transition-all duration-300 hover:scale-105 hover:text-brand-gold-light drop-shadow-sm select-none"
+                className="text-2xl md:text-4xl font-display font-black text-brand-gold cursor-pointer transition-all duration-300 hover:scale-105 hover:text-brand-gold-light drop-shadow-sm select-none"
               >
                 {siteSettings?.storeName || "Douaa & Basma"}
               </span>
             </div>
-            <p className="text-xs text-gray-300 leading-relaxed max-w-sm mx-auto">
+            <p className="text-xs md:text-sm text-gray-300 leading-relaxed max-w-2xl mx-auto">
               {siteSettings?.storeDescription || "أرقى مشروع محلي مغربي لتقديم العصائر و التحليات المنزلية. و نسعى دائماً لترك بصمة من المتعة والفرح بمناسباتكم الخاصة والعامة."}
             </p>
           </div>
 
-          {/* Links map segment */}
-          <div className="flex flex-col items-center justify-center">
-            <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 inline-block">تصفح المتجر من خلال</h4>
-            <ul className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs text-gray-300 w-full max-w-sm">
-              <li>
-                <a 
-                  href="#/" 
-                  onClick={(e) => { e.preventDefault(); handleSetView('home'); }} 
-                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+          <div className="flex flex-col md:flex-row md:justify-between items-center md:items-start gap-12 text-center md:text-right">
+            
+            {/* Social channels icons row (Left on desktop, bottom on mobile) */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-right w-full md:w-auto order-2 md:order-1">
+              <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 md:px-0 inline-block">مواقع التواصل الاجتماعي</h4>
+              <div className="flex gap-2.5 pt-1 justify-center md:justify-start">
+                <a
+                  href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center transition-transform hover:scale-105"
+                  title="تواصل معنا عبر واتساب"
                 >
-                  الرئيسية وقائمة المنتجات
+                  <MessageCircle className="w-4.5 h-4.5" />
                 </a>
-              </li>
-              <li>
-                <a 
-                  href="#/about-us" 
-                  onClick={(e) => { e.preventDefault(); handleSetView('about'); }} 
-                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
-                >
-                  من نحن وقصتنا
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="#/delivery" 
-                  onClick={(e) => { e.preventDefault(); handleSetView('delivery'); }} 
-                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
-                >
-                  معلومات التوصيل والمدن
-                </a>
-              </li>
-              <li>
-                <a 
-                  href="#/contact-us" 
-                  onClick={(e) => { e.preventDefault(); handleSetView('contact'); }} 
-                  className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
-                >
-                  للاتصال بنا وطلب حجز
-                </a>
-              </li>
-            </ul>
-          </div>
 
-          {/* Social channels icons row */}
-          <div className="flex flex-col items-center justify-center">
-            <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 inline-block">مواقع التواصل الاجتماعي</h4>
-            <div className="flex gap-2.5 pt-1 justify-center">
-              <a
-                href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center transition-transform hover:scale-105"
-                title="تواصل معنا عبر واتساب"
-              >
-                <MessageCircle className="w-4.5 h-4.5" />
-              </a>
+                <a
+                  href={siteSettings?.instagramUrl || "https://instagram.com/douaabasma_1"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 text-white flex items-center justify-center transition-transform hover:scale-105"
+                  title="حسابنا على الإنستغرام"
+                >
+                  <Instagram className="w-4.5 h-4.5" />
+                </a>
 
-              <a
-                href={siteSettings?.instagramUrl || "https://instagram.com/douaabasma_1"}
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-500 via-pink-500 to-purple-600 text-white flex items-center justify-center transition-transform hover:scale-105"
-                title="حسابنا على الإنستغرام"
-              >
-                <Instagram className="w-4.5 h-4.5" />
-              </a>
-
-              <a
-                href={siteSettings?.facebookUrl || "https://m.facebook.com/douaabasma01/"}
-                target="_blank"
-                rel="noreferrer"
-                className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition-transform hover:scale-105"
-                title="صفحتنا على الفيسبوك"
-              >
-                <Facebook className="w-4.5 h-4.5" />
-              </a>
+                <a
+                  href={siteSettings?.facebookUrl || "https://m.facebook.com/douaabasma01/"}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-9 h-9 rounded-xl bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition-transform hover:scale-105"
+                  title="صفحتنا على الفيسبوك"
+                >
+                  <Facebook className="w-4.5 h-4.5" />
+                </a>
+              </div>
             </div>
+
+            {/* Links map segment (Right on desktop, top on mobile) */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-right w-full md:w-auto order-1 md:order-2">
+              <h4 className="font-bold text-gray-100 text-sm mb-4 border-b-2 border-brand-gold/60 pb-1 px-4 md:px-0 inline-block">تصفح المتجر من خلال</h4>
+              <ul className="grid grid-cols-2 gap-x-6 gap-y-3 text-xs text-gray-300 max-w-sm w-full md:max-w-none md:w-auto">
+                <li className="text-right">
+                  <a 
+                    href="#/" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('home'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    الرئيسية وقائمة المنتجات
+                  </a>
+                </li>
+                <li className="text-right">
+                  <a 
+                    href="#/about-us" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('about'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    من نحن وقصتنا
+                  </a>
+                </li>
+                <li className="text-right">
+                  <a 
+                    href="#/delivery" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('delivery'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    معلومات التوصيل والمدن
+                  </a>
+                </li>
+                <li className="text-right">
+                  <a 
+                    href="#/contact-us" 
+                    onClick={(e) => { e.preventDefault(); handleSetView('contact'); }} 
+                    className="hover:text-brand-gold transition-colors cursor-pointer text-center block w-full"
+                  >
+                    للاتصال بنا وطلب حجز
+                  </a>
+                </li>
+              </ul>
+            </div>
+
           </div>
 
         </div>

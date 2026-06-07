@@ -33,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const handleLogoClick = () => {
     onSetView('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const baseNavLinks = [

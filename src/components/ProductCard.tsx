@@ -109,7 +109,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Pricing & Footer Actions */}
       <div className="p-5 md:p-6 pt-0 mt-2 border-t border-brand-gold/10 flex items-center justify-between gap-2">
         <div>
-          <span className="text-xs text-gray-400 block font-semibold">السعر الكلي</span>
+          <span className="text-xs text-gray-400 block font-semibold">السعـــر</span>
           <span className="text-xl md:text-2xl font-black text-royal-purple">
             {product.price} <span className="text-sm font-bold text-brand-gold">DH</span>
           </span>

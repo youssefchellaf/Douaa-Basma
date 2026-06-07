@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Clock, ShoppingCart, Leaf, Droplet, Scale } from 'lucide-react';
+import { Clock, ShoppingCart, Leaf } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductCardProps {
@@ -71,13 +71,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               {product.category === 'juices' ? 'عصير طبيعي' : product.category === 'desserts' ? 'تحلية أصيلة' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
             </span>
             {product.size && (
-              <div className="flex items-center gap-1 bg-brand-purple-soft/60 px-2.5 py-1 rounded-xl text-neutral-700">
-                {product.size.toLowerCase().includes('g') ? (
-                  <Scale className="w-3.5 h-3.5 text-brand-purple" />
-                ) : (
-                  <Droplet className="w-3.5 h-3.5 text-brand-purple" />
-                )}
-                <span className="text-xs font-black text-brand-purple">{product.size}</span>
+              <div className="bg-brand-gold-soft border border-brand-gold/20 px-2.5 py-1 rounded-xl">
+                <span className="text-xs font-black text-brand-gold-dark">{product.size}</span>
               </div>
             )}
           </div>

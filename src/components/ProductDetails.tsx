@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Clock, ShoppingBag, Plus, Minus, ChefHat, Sparkles, CheckCircle, HelpCircle, Droplet, Scale } from 'lucide-react';
+import { X, Clock, ShoppingBag, Plus, Minus, ChefHat, Sparkles, CheckCircle, HelpCircle } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductDetailsProps {
@@ -130,14 +130,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                   {/* Rating / Prep estimation */}
                   <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
                     {product.size && (
-                      <div className="flex items-center gap-2 bg-brand-purple/5 border border-brand-purple/10 px-3 py-1.5 rounded-xl">
-                        {product.size.toLowerCase().includes('g') ? (
-                          <Scale className="w-4 h-4 text-brand-purple" />
-                        ) : (
-                          <Droplet className="w-4 h-4 text-brand-purple" />
-                        )}
-                        <span className="text-xs font-bold text-gray-500">الحجم/الوزن:</span>
-                        <span className="text-sm font-black text-brand-purple">{product.size}</span>
+                      <div className="flex items-center gap-2 bg-brand-gold-soft border border-brand-gold/20 px-3 py-1.5 rounded-xl">
+                        <span className="text-xs font-bold text-brand-gold-dark">الحجم/الوزن:</span>
+                        <span className="text-sm font-black text-brand-gold-dark">{product.size}</span>
                       </div>
                     )}
 

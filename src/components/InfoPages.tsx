@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Mail, Phone, Instagram, Facebook, MessageCircle, MapPin, ShieldCheck, Soup, Truck, Award, Sparkles, Clock } from 'lucide-react';
 
 import { SiteSettings } from '../types';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface InfoPagesProps {
   activeTab: 'about' | 'delivery' | 'contact';
@@ -252,7 +253,7 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab, siteSettings })
             <Phone className="w-5 h-5 md:w-6 md:h-6 text-brand-gold flex-shrink-0" />
             تواصلوا معنا الآن
           </h1>
-          <p className="text-gray-500 text-sm mt-2">جاهزون للرد على استفساراتكم وحجز طلبياتكم وأفراحكم الخاصة</p>
+          <p className="text-gray-500 text-sm mt-2">جاهزون للرد على استفساراتكم وحجز طلبياتكم</p>
           <div className="w-32 h-1 bg-gradient-to-r from-transparent via-brand-gold to-transparent mx-auto mt-4" />
         </div>
 
@@ -265,15 +266,15 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab, siteSettings })
               href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-4 p-5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 transition-all text-emerald-900 group shadow-sm"
+              className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-[#25D366] to-[#1ebd5d] text-white hover:shadow-lg hover:shadow-emerald-100 border border-transparent transition-all group shadow-md hover:scale-[1.02] active:scale-[0.98]"
             >
-              <div className="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center group-hover:scale-110 transition-transform">
-                <MessageCircle className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-2xl bg-white text-[#25D366] flex items-center justify-center group-hover:scale-110 transition-transform shadow-md">
+                <WhatsAppIcon className="w-6 h-6 text-[#25D366]" />
               </div>
-              <div className="text-align-start">
-                <p className="text-xs text-emerald-700 font-medium font-sans">واتساب الطلبات الفوري</p>
-                <p className="text-lg font-bold font-mono">{siteSettings?.whatsappNumber || '0705908383'}</p>
-                <p className="text-xs text-emerald-600 mt-1">اضغط للتحدث معنا مباشرة والطلب السريع</p>
+              <div className="text-right">
+                <p className="text-xs text-emerald-50 font-black">واتساب الطلبات الفوري</p>
+                <p className="text-lg font-black font-sans leading-none mt-1">{siteSettings?.whatsappNumber || '0705908383'}</p>
+                <p className="text-[11px] text-emerald-50/90 mt-1.5 font-medium">اضغط للتحدث معنا مباشرة والطلب السريع</p>
               </div>
             </a>
 

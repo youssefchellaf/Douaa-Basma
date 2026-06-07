@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Package, Clock, ShieldAlert, Sparkles, MapPin, CheckCircle2, ChevronRight, MessageSquare, Phone } from 'lucide-react';
 import { Order, SiteSettings } from '../types';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface TrackingProps {
   orders: Order[];
@@ -356,9 +357,9 @@ export const Tracking: React.FC<TrackingProps> = ({ orders, onViewStore, siteSet
                 href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full max-w-[180px] p-2 border border-emerald-100 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors"
+                className="w-full max-w-[180px] py-2 px-3 bg-[#25D366] hover:bg-[#20ba5a] text-white text-[11px] font-black rounded-xl flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-emerald-100 hover:scale-105 active:scale-95 transition-all"
               >
-                <MessageSquare className="w-3.5 h-3.5" />
+                <WhatsAppIcon className="w-3.5 h-3.5 text-white" />
                 <span>فريق الدعم</span>
               </a>
             </div>

@@ -224,10 +224,10 @@ export const APP_COUPONS: Coupon[] = [
 export const DELIVERY_ZONES = [
   // Free delivery places (توصيل مجاني)
   { id: "new_neighborhood", name: "الحي الجديد", cost: 0, description: "الحي الجديد (توصيل سريع بالمجان)" },
-  { id: "shabar", name: "حي الشبار", cost: 0, description: "حي الشبار (توصيل مجاني بالكامل بدون أدنى كلفة)" },
-  { id: "sabila", name: "حي سبيلة", cost: 0, description: "حي سبيلة (توصيل مجاني بالكامل بدون أدنى كلفة)" },
-  { id: "zawiya", name: "حي الزاوية", cost: 0, description: "حي الزاوية (توصيل مجاني بالكامل بدون أدنى كلفة)" },
-  { id: "fawqiya", name: "حومة الفوقية", cost: 0, description: "حومة الفوقية (توصيل مجاني بالكامل بدون أدنى كلفة)" },
+  { id: "shabar", name: "حي الشبار", cost: 0, description: "حي الشبار (توصيل سريع بالمجان)" },
+  { id: "sabila", name: "حي سبيلة", cost: 0, description: "حي سبيلة (توصيل سريع بالمجان)" },
+  { id: "zawiya", name: "حي الزاوية", cost: 0, description: "حي الزاوية (توصيل سريع بالمجان)" },
+  { id: "fawqiya", name: "حومة الفوقية", cost: 0, description: "حومة الفوقية (توصيل سريع بالمجان)" },
 
   // 5 DH places
   { id: "baisa", name: "حي بايصة", cost: 5, description: "حي بايصة (توصيل سريع بـ 5 دراهم)" },

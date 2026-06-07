@@ -227,7 +227,7 @@ export const Checkout: React.FC<CheckoutProps> = ({
                 className={`w-full p-3.5 rounded-2xl border ${formErrors.deliveryArea ? 'border-red-400 focus:border-red-400 bg-red-50/20' : 'border-gray-200 focus:border-brand-purple'} outline-none text-sm transition-colors bg-brand-cream font-medium`}
               >
                 <option value="">اختر المنطقة</option>
-                <optgroup label="أحياء يغطيها التوصيل المجاني بالكامل 🎁">
+                <optgroup label="أحياء يغطيها التوصيل المجاني بالكامل">
                   {DELIVERY_ZONES.filter(z => z.cost === 0 && z.id !== 'remote').map((zone) => (
                     <option key={zone.id} value={zone.id}>
                       {zone.name}

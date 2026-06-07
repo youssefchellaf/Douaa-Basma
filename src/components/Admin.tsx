@@ -7,6 +7,8 @@ import {
   Copy
 } from 'lucide-react';
 import { Order, Coupon, Product, CategoryId, SiteSettings } from '../types';
+import { WhatsAppIcon } from './WhatsAppIcon';
+import { ImageSelectionWidget } from './ImageSelectionWidget';
 
 interface AdminProps {
   orders: Order[];
@@ -859,6 +861,26 @@ export const Admin: React.FC<AdminProps> = ({
     }
   };
 
+  const handleCopyProduct = (product: Product, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (adminRole !== 'admin') {
+      alert('⚠️ عذراً، لا تملك صلاحية نسخ المنتجات.');
+      return;
+    }
+    
+    const nextId = Math.max(...products.map((p) => p.id), 0) + 1;
+    const copiedProduct: Product = {
+      ...product,
+      id: nextId,
+      arabicName: `${product.arabicName} (نسخة)`,
+      name: `${product.name} (Copy)`,
+      isFeatured: false, // Default copy is not featured
+    };
+    
+    const updatedProducts = [copiedProduct, ...products];
+    onUpdateProducts(updatedProducts);
+  };
+
   const handleToggleFeatured = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation();
     if (adminRole !== 'admin') {
@@ -1193,12 +1215,10 @@ export const Admin: React.FC<AdminProps> = ({
                           href={generateWhatsAppConfirmUrl(order, siteSettings?.storeName)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-emerald-600 hover:text-emerald-700 font-mono font-bold mt-1.5 bg-emerald-50 hover:bg-emerald-100/80 px-2 py-1 rounded-lg border border-emerald-100 transition-colors cursor-pointer group shadow-sm"
+                          className="inline-flex items-center gap-1.5 text-[11px] bg-[#25D366] hover:bg-[#20ba5a] text-white font-mono font-black mt-1.5 px-2.5 py-1 rounded-lg transition-all cursor-pointer group shadow-sm hover:scale-105 active:scale-95"
                           title="اضغط لإرسال رسالة تتبع وتأكيد للزبون عبر واتساب"
                         >
-                          <svg className="w-3.5 h-3.5 fill-emerald-600 flex-shrink-0 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-                            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.431 2.52 1.224 3.504l-.803 2.929 2.997-.785a5.741 5.741 0 002.35.518h.003c3.18 0 5.766-2.586 5.767-5.767 0-3.18-2.586-5.765-5.766-5.765zm3.384 8.163c-.151.424-.761.765-1.055.795-.294.03-.58.143-1.879-.395-1.571-.65-2.562-2.248-2.64-2.351-.078-.103-.642-.853-.642-1.628 0-.775.405-1.154.549-1.3.143-.146.313-.183.418-.183h.268c.088-.002.203-.004.288.196.103.243.353.861.383.923.03.061.05.133.01.214-.039.081-.059.133-.119.204-.06.071-.125.158-.179.213-.06.061-.122.127-.052.247.07.12.311.512.667.828.458.408.844.534.964.594.12.06.191.051.262-.03.072-.081.306-.356.388-.475.081-.12.162-.102.274-.061.112.041.711.355.834.417.122.061.203.092.233.143.03.051.03.294-.121.718z" />
-                          </svg>
+                          <WhatsAppIcon className="w-3.5 h-3.5 text-white flex-shrink-0 group-hover:scale-110 transition-transform" />
                           <span>{order.phone}</span>
                         </a>
                       </td>
@@ -1246,10 +1266,10 @@ export const Admin: React.FC<AdminProps> = ({
                               href={generateWhatsAppStatusUpdateUrl(order, order.status, siteSettings?.storeName)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-full py-1 px-1.5 border border-brand-purple/25 bg-brand-purple-soft/40 hover:bg-brand-purple-soft text-brand-purple rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 cursor-pointer transition-colors shadow-2xs text-center"
+                              className="w-full py-1.5 px-2 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-lg text-[10px] font-black flex items-center justify-center gap-1 cursor-pointer transition-all shadow-sm shadow-emerald-100 hover:scale-[1.02] active:scale-[0.98] text-center"
                               title="إرسال رسالة حالة الطلب اليدوية عبر واتساب للزبون"
                             >
-                              <MessageCircle className="w-3 h-3 text-brand-purple" />
+                              <WhatsAppIcon className="w-3.5 h-3.5 text-white" />
                               <span>إرسال الحالة للزبون</span>
                             </a>
                           )}
@@ -1477,6 +1497,17 @@ export const Admin: React.FC<AdminProps> = ({
 
                       {adminRole === 'admin' && (
                         <button
+                          onClick={(e) => handleCopyProduct(p, e)}
+                          className="px-3 py-1.5 bg-brand-gold-soft/50 hover:bg-brand-gold-soft/80 text-brand-gold-dark text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                          title="إنشاء نسخة من هذا المنتج"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>نسخ</span>
+                        </button>
+                      )}
+
+                      {adminRole === 'admin' && (
+                        <button
                           onClick={(e) => handleToggleFeatured(p, e)}
                           className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 cursor-pointer transition-colors ${
                             p.isFeatured 
@@ -1617,64 +1648,13 @@ export const Admin: React.FC<AdminProps> = ({
                     </div>
 
                      <div>
-                      <label className="block mb-1 text-gray-600 font-sans font-bold">رابط صورة المنتج (URL) *</label>
-                      
-                      <div className="space-y-3 font-sans">
-                        <input
-                          type="text"
-                          value={prodImage}
-                          onChange={(e) => setProdImage(cleanAndConvertImageUrl(e.target.value))}
-                          placeholder="أدخل رابط الصورة المباشر للمنتج..."
-                          className="w-full p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple text-xs font-sans font-mono"
-                        />
-
-                        {isDiscordUrl(prodImage) && (
-                          <div className="text-[11px] text-rose-700 bg-rose-50 border border-rose-100 p-2.5 rounded-xl font-sans font-bold leading-relaxed">
-                            ⚠️ تنبيه هام: روابط صور Discord تنتهي بعد 24 ساعة فقط ولن تعود صالحة! نوصيك بشدة بلصق رابط دائم ومستقر من مركز رفع مجاني ومستمر مثل <a href="https://postimages.org" target="_blank" rel="noreferrer" className="underline text-blue-600 font-bold">Postimages</a> أو <a href="https://imgbb.com" target="_blank" rel="noreferrer" className="underline text-blue-600 font-bold">imgbb</a> لضمان ظهور المنتجات للزبائن دوماً.
-                          </div>
-                        )}
-
-                        <div className="text-[10px] text-gray-500 bg-neutral-50 p-2.5 rounded-xl border border-gray-150 space-y-1 font-sans leading-relaxed text-right">
-                          <p className="font-semibold text-brand-purple">💡 نصائح لضمان عمل الصور بشكل دائم ومستقر في المتصفح:</p>
-                          <ul className="list-disc list-inside space-y-1 text-gray-650 pr-1">
-                            <li><strong>Google Drive</strong>: الصق رابط مشاركة الملف العادي وسنقوم بتحويله لك تلقائياً وبدقة ليعمل مباشرة!</li>
-                            <li><strong>Dropbox</strong>: يتم تعديل روابط دروببوكس تلقائياً لتعود كروابط مباشرة (تحتوي على <code>raw=1</code>).</li>
-                            <li>تأكد دائماً أن الرابط ينتهي بامتداد صورة حقيقي مثل <code>.png</code> أو <code>.jpg</code> أو <code>.webp</code> للمواقع الأخرى.</li>
-                          </ul>
-                        </div>
-
-                        {prodImage && (
-                          <div className="relative border border-brand-gold/20 rounded-2xl p-3 bg-brand-cream/40 flex items-center gap-4">
-                            <img
-                              src={prodImage}
-                              alt="معاينة الصورة"
-                              referrerPolicy="no-referrer"
-                              className="w-20 h-20 rounded-xl object-cover border border-gray-200 shrink-0 bg-white"
-                              onError={(e) => {
-                                (e.target as any).src = 'https://placehold.co/400x400?text=رابط+غير+صالح';
-                              }}
-                            />
-                            <div className="flex-1 min-w-0">
-                              <span className="text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1 mb-1">
-                                <Check className="w-3 h-3" /> معاينة الصورة من الرابط
-                              </span>
-                              <p className="text-[10px] text-gray-400 truncate max-w-xs font-mono font-normal">
-                                {prodImage}
-                              </p>
-                              
-                              <div className="flex gap-2 mt-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setProdImage('')}
-                                  className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
-                                >
-                                  إزالة الرابط 🗑️
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                      <ImageSelectionWidget
+                        label="صورة المنتج (Product Image) *"
+                        value={prodImage}
+                        onChange={(val) => setProdImage(val)}
+                        placeholder="أدخل رابط الصورة المباشر للمنتج..."
+                        maxDim={800}
+                      />
                     </div>
 
                     <div>
@@ -2040,58 +2020,26 @@ export const Admin: React.FC<AdminProps> = ({
                 
                 {/* Logo modification block */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-700 block">شعار الموقع الرئيسي (Logo URL)</label>
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={siteSettings?.logoUrl || "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd"} 
-                      alt="Current Logo" 
-                      className="w-14 h-14 object-contain rounded-xl border border-gray-100 p-1 bg-brand-cream"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="flex-1 space-y-1.5">
-                      <input 
-                        type="text"
-                        value={siteSettings?.logoUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, logoUrl: cleanAndConvertImageUrl(e.target.value) })}
-                        placeholder="أدخل رابط شعار الموقع الرئيسي المباشر..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
-                      />
-                      {isDiscordUrl(siteSettings?.logoUrl || '') && (
-                        <p className="text-[10px] text-rose-600 font-bold font-sans">
-                          ⚠️ الرابط المكتوب معرّض للاختفاء (Discord)! يرجى استبداله برابط دائم.
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <ImageSelectionWidget
+                    label="شعار الموقع الرئيسي (Logo)"
+                    value={siteSettings?.logoUrl || ''}
+                    onChange={(val) => onUpdateSiteSettings({ ...siteSettings, logoUrl: val })}
+                    placeholder="أدخل رابط الشعار المباشر أو استخدم الخيارات أعلاه..."
+                    maxDim={600}
+                  />
                 </div>
 
                 <hr className="border-gray-100 my-4" />
 
                 {/* Favicon modification block */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-gray-700 block">أيقونة المتصفح المفضلة (Favicon URL)</label>
-                  <div className="flex items-center gap-3">
-                    <img 
-                      src={siteSettings?.faviconUrl || "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd"} 
-                      alt="Current Favicon" 
-                      className="w-12 h-12 object-contain rounded-xl border border-gray-200 bg-transparent"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="flex-1 space-y-1.5">
-                      <input 
-                        type="text"
-                        value={siteSettings?.faviconUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, faviconUrl: cleanAndConvertImageUrl(e.target.value) })}
-                        placeholder="أدخل رابط أيقونة favicon المباشر..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
-                      />
-                      {isDiscordUrl(siteSettings?.faviconUrl || '') && (
-                        <p className="text-[10px] text-rose-600 font-bold font-sans">
-                          ⚠️ الرابط المكتوب معرّض للاختفاء (Discord)! يرجى استبداله برابط دائم.
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <ImageSelectionWidget
+                    label="أيقونة المتصفح المفضلة (Favicon)"
+                    value={siteSettings?.faviconUrl || ''}
+                    onChange={(val) => onUpdateSiteSettings({ ...siteSettings, faviconUrl: val })}
+                    placeholder="أدخل رابط أيقونة favicon المباشر..."
+                    maxDim={200}
+                  />
                 </div>
 
                 <hr className="border-gray-100 my-4" />
@@ -2101,40 +2049,24 @@ export const Admin: React.FC<AdminProps> = ({
                   
                   {/* Desktop Banner Field */}
                   <div className="space-y-2 border border-gray-100 rounded-2xl p-3 bg-neutral-50/50">
-                    <label className="text-xs font-black text-gray-700 block">🖥️ إضافة صورة بانر للكمبيوتر (Desktop)</label>
-                    <div className="space-y-2">
-                      <input 
-                        type="text"
-                        value={siteSettings?.heroBannerUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroBannerUrl: cleanAndConvertImageUrl(e.target.value) })}
-                        placeholder="أدخل رابط صورة بانر الكمبيوتر المباشر..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
-                      />
-                      {isDiscordUrl(siteSettings?.heroBannerUrl || '') && (
-                        <p className="text-[10px] text-rose-600 font-bold font-sans">
-                          ⚠️ الرابط معرّض للاختفاء (Discord)!
-                        </p>
-                      )}
-                    </div>
+                    <ImageSelectionWidget
+                      label="🖥️ صورة بانر للكمبيوتر (Desktop Banner)"
+                      value={siteSettings?.heroBannerUrl || ''}
+                      onChange={(val) => onUpdateSiteSettings({ ...siteSettings, heroBannerUrl: val })}
+                      placeholder="أدخل رابط بانر الكمبيوتر المباشر..."
+                      maxDim={1200}
+                    />
                   </div>
 
                   {/* Mobile Banner Field */}
                   <div className="space-y-2 border border-gray-100 rounded-2xl p-3 bg-neutral-50/50">
-                    <label className="text-xs font-black text-gray-700 block">📱 إضافة صورة بانر للهاتف (Mobile)</label>
-                    <div className="space-y-2">
-                      <input 
-                        type="text"
-                        value={siteSettings?.heroBannerMobileUrl || ''}
-                        onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroBannerMobileUrl: cleanAndConvertImageUrl(e.target.value) })}
-                        placeholder="أدخل رابط صورة بانر الهاتف المباشر..."
-                        className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple bg-white font-mono"
-                      />
-                      {isDiscordUrl(siteSettings?.heroBannerMobileUrl || '') && (
-                        <p className="text-[10px] text-rose-600 font-bold font-sans">
-                          ⚠️ الرابط معرّض للاختفاء (Discord)!
-                        </p>
-                      )}
-                    </div>
+                    <ImageSelectionWidget
+                      label="📱 صورة بانر للهاتف (Mobile Banner)"
+                      value={siteSettings?.heroBannerMobileUrl || ''}
+                      onChange={(val) => onUpdateSiteSettings({ ...siteSettings, heroBannerMobileUrl: val })}
+                      placeholder="أدخل رابط بانر الهاتف المباشر..."
+                      maxDim={1000}
+                    />
                   </div>
 
                 </div>
@@ -2772,18 +2704,8 @@ export const Admin: React.FC<AdminProps> = ({
 
               <div className="p-6">
                 <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${
-                    statusUpdateModal.status === 'pending'
-                      ? 'bg-amber-50 text-amber-600'
-                      : statusUpdateModal.status === 'preparing'
-                        ? 'bg-pink-50 text-pink-600'
-                        : statusUpdateModal.status === 'on_way'
-                          ? 'bg-blue-50 text-blue-600'
-                          : statusUpdateModal.status === 'delivered'
-                            ? 'bg-emerald-50 text-emerald-600'
-                            : 'bg-rose-50 text-rose-600'
-                  }`}>
-                    <MessageCircle className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-[#25D366] flex items-center justify-center shrink-0 shadow-md shadow-emerald-100">
+                    <WhatsAppIcon className="w-6 h-6 text-white" />
                   </div>
 
                   <div className="space-y-1.5 flex-1 pr-1 text-right">
@@ -2825,9 +2747,9 @@ export const Admin: React.FC<AdminProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setStatusUpdateModal({ isOpen: false })}
-                    className="flex-1 py-3 px-4 text-xs font-black rounded-xl cursor-pointer transition-all text-center flex items-center justify-center gap-1.5 shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-100 hover:shadow-lg"
+                    className="flex-1 py-3 px-4 text-xs font-black rounded-xl cursor-pointer transition-all text-center flex items-center justify-center gap-1.5 shadow-sm bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-emerald-50 hover:shadow-lg"
                   >
-                    <MessageCircle className="w-4 h-4" />
+                    <WhatsAppIcon className="w-4 h-4 text-white" />
                     <span>إرسال التحديث عبر الواتساب</span>
                   </a>
 

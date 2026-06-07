@@ -17,6 +17,7 @@ import { Checkout } from './components/Checkout';
 import { Tracking } from './components/Tracking';
 import { Admin } from './components/Admin';
 import { InfoPages } from './components/InfoPages';
+import { WhatsAppIcon } from './components/WhatsAppIcon';
 
 const getProductsLookup = (): Product[] => {
   try {
@@ -1315,10 +1316,10 @@ export default function App() {
                   href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white flex items-center justify-center transition-transform hover:scale-105"
+                  className="w-9 h-9 rounded-xl bg-[#25D366] hover:bg-[#20ba5a] text-white flex items-center justify-center transition-transform hover:scale-105 shadow-sm shadow-[#25D366]/30"
                   title="تواصل معنا عبر واتساب"
                 >
-                  <MessageCircle className="w-4.5 h-4.5" />
+                  <WhatsAppIcon className="w-4.5 h-4.5 text-white" />
                 </a>
  
                 <a

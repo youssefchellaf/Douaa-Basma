@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingCart, Award, Sparkles, MapPin, Phone, Settings, Milk, Heart, MessageCircle, Menu, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { CartItem, SiteSettings } from '../types';
+import { WhatsAppIcon } from './WhatsAppIcon';
 
 interface HeaderProps {
   currentView: string;
@@ -201,10 +202,10 @@ export const Header: React.FC<HeaderProps> = ({
             href={`https://wa.me/${siteSettings?.whatsappNumber || '212705908383'}`}
             target="_blank"
             rel="noreferrer"
-            className="p-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-xl transition-all cursor-pointer shadow-sm hidden sm:flex items-center gap-1.5 text-xs font-bold"
+            className="py-1.5 px-3.5 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-xl transition-all cursor-pointer shadow-md shadow-emerald-200 hidden sm:flex items-center gap-1.5 text-xs font-black hover:scale-105 active:scale-95"
             title="تحدث مباشرة مع فريق الدعم"
           >
-            <MessageCircle className="w-4.5 h-4.5" />
+            <WhatsAppIcon className="w-4.5 h-4.5 text-white" />
             <span>طلب فوري</span>
           </a>
 

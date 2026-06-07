@@ -1002,7 +1002,7 @@ export default function App() {
         
         {/* VIEW 1: MAIN E-STORE (HOME) */}
         {currentView === 'home' && (
-          <div className="space-y-12">
+          <div className="space-y-6">
             
             {/* HERO SEGMENT */}
             <Hero
@@ -1015,7 +1015,7 @@ export default function App() {
             />
 
             {/* FILTERING BAR & PRODUCTS GRID */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 font-sans">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 font-sans">
               
               <div className="flex flex-col items-start text-right md:items-center md:text-center gap-5 mb-8" id="products-listing-title">
                 <div className="flex flex-col items-start text-right md:items-center md:text-center w-full">

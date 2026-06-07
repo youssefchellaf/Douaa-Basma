@@ -133,6 +133,13 @@ export default function App() {
 
     setSiteSettings(updated);
     saveToLocalStorage('db_site_settings', JSON.stringify(updated));
+    
+    // Save to server
+    fetch('/api/site-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated)
+    }).catch(err => console.error("Failed to save site settings to server:", err));
   };
 
   const handleSetView = (view: string) => {
@@ -367,6 +374,59 @@ export default function App() {
     } catch (e) {
       console.error("Startup cache cleanup failed:", e);
     }
+
+    // Load dynamic settings, products, coupons and orders from the central server backend
+    const loadServerData = async () => {
+      try {
+        const res = await fetch('/api/site-settings');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            setSiteSettings(prev => ({ ...prev, ...data }));
+          }
+        }
+      } catch (err) {
+        console.error("Error loading server site settings:", err);
+      }
+
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setProductsList(data);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading server products:", err);
+      }
+
+      try {
+        const res = await fetch('/api/coupons');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setCoupons(data);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading server coupons:", err);
+      }
+
+      try {
+        const res = await fetch('/api/orders');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setOrders(data);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading server orders:", err);
+      }
+    };
+
+    loadServerData();
   }, []);
 
   // Local storage lists for persistence
@@ -535,10 +595,24 @@ export default function App() {
       }))
     }));
     saveToLocalStorage('db_orders', JSON.stringify(minimizedOrders));
+
+    // Save to server
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(minimizedOrders)
+    }).catch(err => console.error("Failed to save orders to server:", err));
   }, [orders]);
 
   useEffect(() => {
     saveToLocalStorage('db_coupons', JSON.stringify(coupons));
+    
+    // Save to server
+    fetch('/api/coupons', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(coupons)
+    }).catch(err => console.error("Failed to save coupons to server:", err));
   }, [coupons]);
 
   useEffect(() => {
@@ -547,6 +621,13 @@ export default function App() {
 
   useEffect(() => {
     saveToLocalStorage('db_products', JSON.stringify(productsList));
+
+    // Save to server
+    fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(productsList)
+    }).catch(err => console.error("Failed to save products to server:", err));
   }, [productsList]);
 
   // Scroll to the top of the page on view/page transition (safely handled)

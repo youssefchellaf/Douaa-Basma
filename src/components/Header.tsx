@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingCart, Award, Sparkles, MapPin, Phone, Settings, Milk, Heart, MessageCircle, Menu, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { CartItem, SiteSettings } from '../types';
@@ -31,9 +31,29 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const [logoClicks, setLogoClicks] = useState(0);
+  const clickTimerRef = useRef<any>(null);
+
   const handleLogoClick = () => {
-    onSetView('home');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
+
+    const nextClicks = logoClicks + 1;
+    if (nextClicks >= 5) {
+      onUnlockAdmin();
+      onSetView('admin');
+      setLogoClicks(0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      setLogoClicks(nextClicks);
+      clickTimerRef.current = setTimeout(() => {
+        setLogoClicks(0);
+      }, 3000);
+
+      onSetView('home');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const baseNavLinks = [

@@ -87,8 +87,6 @@ export interface SiteSettings {
   trackPath?: string;
   adminPath?: string;
   homePath?: string;
-  isComingSoonActive?: boolean;
-  comingSoonTitle?: string;
-  comingSoonSubtitle?: string;
+
 }
 

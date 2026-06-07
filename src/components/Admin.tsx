@@ -2023,10 +2023,7 @@ export const Admin: React.FC<AdminProps> = ({
                     whatsappMessageTemplate: "طلب جديد من متجر Douaa & Basma",
                     instagramUrl: "https://instagram.com/douaabasma_1",
                     facebookUrl: "https://m.facebook.com/douaabasma01/",
-                    footerCredits: "جميع الحقوق محفوظة لعلامة",
-                    isComingSoonActive: false,
-                    comingSoonTitle: "انتظرونا... نفتتح قريباً!",
-                    comingSoonSubtitle: "نعمل بحب وشغف لتجهيز أفخر العصائر والتحليات المنزلية تليق بضيافتكم."
+                    footerCredits: "جميع الحقوق محفوظة لعلامة"
                   });
                   alert('🎉 تم إعادة ضبط الإعدادات إلى القيم المصممة بنجاح!');
                 }
@@ -2035,70 +2032,6 @@ export const Admin: React.FC<AdminProps> = ({
             >
               🔄 إعادة ضبط المصنع
             </button>
-          </div>
-
-          {/* Coming Soon Mode Control Card */}
-          <div className="bg-white p-6 rounded-3xl border border-brand-gold/25 shadow-md space-y-4 text-align-start font-sans relative overflow-hidden">
-            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-brand-gold via-brand-purple hover:from-brand-gold-light hover:to-brand-gold" />
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-royal-purple inline-flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${siteSettings?.isComingSoonActive ? 'bg-amber-500 animate-ping' : 'bg-gray-300'}`} />
-                  🚧 وضع الافتتاح قريباً (Coming Soon Mode)
-                </h3>
-                <p className="text-xs text-gray-500 leading-relaxed">
-                  عند تفعيل هذا الخيار المتقدم، سيتم غلق المتجر أمام العملاء تلقائياً ليظهر لهم صفحة ترقب وتجهيز أنيقة مع الشعار ومجموعات الدعم والشبكات الاجتماعية بدون أي موقت، مما يمنحكم الوقت لإعداد تحديثاتكم براحة.
-                </p>
-              </div>
-
-              {/* Toggle switch with exquisite styles */}
-              <div className="flex items-center gap-3">
-                <span className={`text-[11px] font-bold transition-colors ${siteSettings?.isComingSoonActive ? 'text-amber-600' : 'text-gray-400'}`}>
-                  {siteSettings?.isComingSoonActive ? 'مُفعّل (الموقع مغلق حالياً)' : 'مُعطّل (الموقع مفتوح للجميع)'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => onUpdateSiteSettings({ 
-                    ...siteSettings, 
-                    isComingSoonActive: !siteSettings?.isComingSoonActive 
-                  })}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    siteSettings?.isComingSoonActive ? 'bg-amber-500' : 'bg-gray-200'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                      siteSettings?.isComingSoonActive ? '-translate-x-5' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-
-            {siteSettings?.isComingSoonActive && (
-              <div className="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-black text-gray-700 block mb-1">عنوان صفحة الافتتاح</label>
-                  <input 
-                    type="text"
-                    value={siteSettings?.comingSoonTitle || 'انتظرونا... نفتتح قريباً!'}
-                    onChange={(e) => onUpdateSiteSettings({ ...siteSettings, comingSoonTitle: e.target.value })}
-                    placeholder="مثال: انتظرونا... نفتتح قريباً!"
-                    className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-black text-gray-700 block mb-1">العنوان الوصفي الفرعي</label>
-                  <input 
-                    type="text"
-                    value={siteSettings?.comingSoonSubtitle || 'نعمل بحب وشغف لتجهيز أفخر العصائر والتحليات المنزلية تليق بضيافتكم.'}
-                    onChange={(e) => onUpdateSiteSettings({ ...siteSettings, comingSoonSubtitle: e.target.value })}
-                    placeholder="مثال: ترقبوا تشكيلة مدهشة من النكهات..."
-                    className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
-                  />
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

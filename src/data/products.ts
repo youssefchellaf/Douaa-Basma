@@ -45,7 +45,7 @@ export const PRODUCTS: Product[] = [
     price: 25,
     image: productZaza,
     category: "desserts",
-    rating: 4.9,
+    size: "300g",
     isFeatured: true,
     prepTime: "5 - 10 دقائق",
     ingredients: ["أفوكادو طازج", "موز غني", "فلان كراميل منزلي", "لوز محمص مقرمش", "حليب كامل الدسم", "مكسرات وفواكه جافة للتزيين"]
@@ -58,7 +58,7 @@ export const PRODUCTS: Product[] = [
     price: 25,
     image: "https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&q=80&w=600",
     category: "juices",
-    rating: 4.8,
+    size: "350ml",
     isFeatured: true,
     prepTime: "5 - 10 دقائق",
     ingredients: ["أفوكادو ممتاز", "حليب طازج", "عسل حر طبيعي", "لوز مطحون"]
@@ -71,7 +71,7 @@ export const PRODUCTS: Product[] = [
     price: 25,
     image: productMangoUploaded,
     category: "juices",
-    rating: 4.7,
+    size: "350ml",
     isFeatured: true,
     prepTime: "5 - 10 دقائق",
     ingredients: ["أفخر أنواع المانجو", "قطع ثلج خفيفة", "لمسة نعناع طازج"]
@@ -84,7 +84,7 @@ export const PRODUCTS: Product[] = [
     price: 20,
     image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&q=80&w=600",
     category: "juices",
-    rating: 4.5,
+    size: "350ml",
     prepTime: "5 - 10 دقائق",
     ingredients: ["موز ناضج حُلو", "تفاح طازج مقشر", "حليب بارد", "قرفة مطحونة اختيارية"]
   },
@@ -96,7 +96,7 @@ export const PRODUCTS: Product[] = [
     price: 25,
     image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?auto=format&fit=crop&q=80&w=600",
     category: "juices",
-    rating: 4.9,
+    size: "350ml",
     isFeatured: true,
     prepTime: "5 - 10 دقائق",
     ingredients: ["ثمرة التنين (Dragon Fruit) حمراء", "مستخلص الليمون الحامض", "ماء جوز الهند لمنعش ممتع"]
@@ -109,7 +109,7 @@ export const PRODUCTS: Product[] = [
     price: 25,
     image: "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&q=80&w=600",
     category: "juices",
-    rating: 4.6,
+    size: "400ml",
     prepTime: "5 - 10 دقائق",
     ingredients: ["موز، تفاح، خوخ، مكسرات متكاملة", "برتقال ناعم", "حليب طازج"]
   },
@@ -121,7 +121,7 @@ export const PRODUCTS: Product[] = [
     price: 20,
     image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?auto=format&fit=crop&q=80&w=600",
     category: "juices",
-    rating: 4.8,
+    size: "350ml",
     prepTime: "5 - 10 دقائق",
     ingredients: ["برتقال مغربي طازج 100%", "بدون مياه مضافة", "بدون سكر مضاف"]
   },
@@ -133,7 +133,7 @@ export const PRODUCTS: Product[] = [
     price: 25,
     image: "https://images.unsplash.com/photo-1624462966581-bc6d768cbce5?auto=format&fit=crop&q=80&w=600",
     category: "juices",
-    rating: 4.6,
+    size: "350ml",
     prepTime: "5 - 10 دقائق",
     ingredients: ["إجاص طري", "أناناس ناضج غني بالشراب", "رشة بنكهة الزنجبيل الطازج"]
   },
@@ -145,7 +145,7 @@ export const PRODUCTS: Product[] = [
     price: 15,
     image: productFlan,
     category: "desserts",
-    rating: 4.8,
+    size: "200g",
     isFeatured: true,
     prepTime: "5 - 10 دقائق",
     ingredients: ["حليب مكثف", "قشدة طازجة", "عسل وكراميل ذهبي محروق برقة", "رقائق اللوز والتورون الأندلسي الفاخر"]
@@ -158,7 +158,7 @@ export const PRODUCTS: Product[] = [
     price: 12,
     image: "https://images.unsplash.com/photo-1528975604071-b4dc52a2d18c?auto=format&fit=crop&q=80&w=600",
     category: "desserts",
-    rating: 4.7,
+    size: "180g",
     prepTime: "5 - 10 دقائق",
     ingredients: ["بيض طازج", "حليب مكثف ومبخر", "فانيليا مدغشقرية طبيعية", "كراميل سائل"]
   }

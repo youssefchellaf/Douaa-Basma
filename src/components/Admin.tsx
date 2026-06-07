@@ -629,6 +629,7 @@ export const Admin: React.FC<AdminProps> = ({
   const [prodImage, setProdImage] = useState('');
   const [prodDescription, setProdDescription] = useState('');
   const [prodPrepTime, setProdPrepTime] = useState('5 - 10 دقائق');
+  const [prodSize, setProdSize] = useState('350ml');
   const [prodIngredients, setProdIngredients] = useState<string[]>([]);
   const [newIngredient, setNewIngredient] = useState('');
   const [prodIsFeatured, setProdIsFeatured] = useState(false);
@@ -767,6 +768,7 @@ export const Admin: React.FC<AdminProps> = ({
     setProdImage('');
     setProdDescription('');
     setProdPrepTime('5 - 10 دقائق');
+    setProdSize('350ml');
     setProdIngredients(['فواكه طازجة']);
     setProdIsFeatured(false);
     setProdIsAvailable(true);
@@ -784,6 +786,7 @@ export const Admin: React.FC<AdminProps> = ({
     setProdImage(product.image);
     setProdDescription(product.description);
     setProdPrepTime(product.prepTime || '5 - 10 دقائق');
+    setProdSize(product.size || '350ml');
     setProdIngredients(product.ingredients || []);
     setProdIsFeatured(!!product.isFeatured);
     setProdIsAvailable(product.isAvailable !== false);
@@ -825,7 +828,7 @@ export const Admin: React.FC<AdminProps> = ({
       price: Math.max(1, prodPrice),
       image: prodImage.trim() || 'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&q=80&w=600',
       category: prodCategory,
-      rating: editingProduct ? editingProduct.rating : 4.8,
+      size: prodSize.trim() || '350ml',
       isFeatured: prodIsFeatured,
       isAvailable: prodIsAvailable,
       prepTime: prodPrepTime.trim() || '5 - 10 دقائق',
@@ -1608,7 +1611,7 @@ export const Admin: React.FC<AdminProps> = ({
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                       <div>
                         <label className="block mb-1 text-gray-600">السعر بالدرهم (DH) *</label>
                         <input
@@ -1644,6 +1647,30 @@ export const Admin: React.FC<AdminProps> = ({
                           placeholder="مثال: 5 - 10 دقائق"
                           className="w-full p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple text-xs font-sans"
                         />
+                      </div>
+
+                      <div>
+                        <label className="block mb-1 text-gray-650">الحجم أو الوزن (ml/g) *</label>
+                        <input
+                          type="text"
+                          required
+                          value={prodSize}
+                          onChange={(e) => setProdSize(e.target.value)}
+                          placeholder="مثال: 350ml أو 200g"
+                          className="w-full p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple text-xs font-sans font-semibold text-royal-purple"
+                        />
+                        <div className="flex gap-1 flex-wrap mt-1">
+                          {['200ml', '350ml', '400ml', '200g', '300g'].map((preset) => (
+                            <button
+                              key={preset}
+                              type="button"
+                              onClick={() => setProdSize(preset)}
+                              className="text-[9px] bg-brand-purple-soft hover:bg-brand-purple/20 text-brand-purple px-1.5 py-0.5 rounded-md font-bold transition-all cursor-pointer"
+                            >
+                              {preset}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 

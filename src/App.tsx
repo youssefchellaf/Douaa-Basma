@@ -527,7 +527,7 @@ export default function App() {
           price: item.product.price,
           image: "", // Remove massive image data url, will be resolved from lookup cache on load
           category: item.product.category,
-          rating: item.product.rating,
+          size: item.product.size,
           prepTime: item.product.prepTime,
           ingredients: item.product.ingredients || []
         },
@@ -756,11 +756,11 @@ export default function App() {
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     const priceA = a?.price || 0;
     const priceB = b?.price || 0;
-    const ratingA = a?.rating || 0;
-    const ratingB = b?.rating || 0;
+    const sizeA = typeof a?.size === 'string' ? parseFloat(a.size) || 0 : 0;
+    const sizeB = typeof b?.size === 'string' ? parseFloat(b.size) || 0 : 0;
     if (sortOption === 'priceAsc') return priceA - priceB;
     if (sortOption === 'priceDesc') return priceB - priceA;
-    if (sortOption === 'rating') return ratingB - ratingA;
+    if (sortOption === 'rating') return sizeB - sizeA;
     return 0; // default initial layout
   });
 
@@ -1082,7 +1082,7 @@ export default function App() {
                     <option value="default" className="bg-royal-purple text-white">الافتراضي (الأصوب)</option>
                     <option value="priceAsc" className="bg-royal-purple text-white">السعر: من الأقل إلى الأكثر</option>
                     <option value="priceDesc" className="bg-royal-purple text-white">السعر: من الأكثر إلى الأقل</option>
-                    <option value="rating" className="bg-royal-purple text-white">الأعلى تقييماً وطلباً</option>
+                    <option value="rating" className="bg-royal-purple text-white">حسب الحجم والوزن</option>
                   </select>
                 </div>
 

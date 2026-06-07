@@ -15,7 +15,7 @@ export interface Product {
   price: number;
   image: string;
   category: CategoryId;
-  rating: number;
+  size: string;
   isFeatured?: boolean;
   isAvailable?: boolean;
   prepTime: string; // e.g. "5-10 دقائق"

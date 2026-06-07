@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Star, Clock, ShoppingBag, Plus, Minus, ChefHat, Sparkles, CheckCircle, HelpCircle } from 'lucide-react';
+import { X, Clock, ShoppingBag, Plus, Minus, ChefHat, Sparkles, CheckCircle, HelpCircle, Droplet, Scale } from 'lucide-react';
 import { Product } from '../types';
 
 interface ProductDetailsProps {
@@ -129,14 +129,17 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                 <div>
                   {/* Rating / Prep estimation */}
                   <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
-                    <div className="flex items-center gap-1.5">
-                      <div className="flex items-center gap-0.5" style={{ direction: 'rtl' }}>
-                        {[1, 2, 3, 4, 5].map((s) => (
-                          <Star key={s} className="w-4 h-4 text-brand-gold fill-brand-gold" />
-                        ))}
+                    {product.size && (
+                      <div className="flex items-center gap-2 bg-brand-purple/5 border border-brand-purple/10 px-3 py-1.5 rounded-xl">
+                        {product.size.toLowerCase().includes('g') ? (
+                          <Scale className="w-4 h-4 text-brand-purple" />
+                        ) : (
+                          <Droplet className="w-4 h-4 text-brand-purple" />
+                        )}
+                        <span className="text-xs font-bold text-gray-500">الحجم/الوزن:</span>
+                        <span className="text-sm font-black text-brand-purple">{product.size}</span>
                       </div>
-                      <span className="text-sm font-bold text-gray-800">{product.rating} (مميز)</span>
-                    </div>
+                    )}
 
                     <div className="flex items-center gap-3 flex-wrap">
                       <div className="flex items-center gap-1.5 text-gray-500 text-sm font-semibold">

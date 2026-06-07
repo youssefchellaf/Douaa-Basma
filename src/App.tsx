@@ -565,6 +565,45 @@ export default function App() {
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
 
   // --- PERSISTENCE SYNCS ---
+  const saveOrdersList = (ordersToSave: Order[]) => {
+    const minimizedOrders = ordersToSave.map(order => ({
+      ...order,
+      items: order.items.map(item => ({
+        productId: item.product.id,
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          arabicName: item.product.arabicName,
+          price: item.product.price,
+          image: "",
+          category: item.product.category,
+          size: item.product.size,
+          prepTime: item.product.prepTime,
+          ingredients: item.product.ingredients || []
+        },
+        quantity: item.quantity
+      }))
+    }));
+    saveToLocalStorage('db_orders', JSON.stringify(minimizedOrders));
+
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(minimizedOrders)
+    }).catch(err => console.error("Failed to save orders to server:", err));
+  };
+
+  const handleUpdateProducts = (newProducts: Product[]) => {
+    setProductsList(newProducts);
+    saveToLocalStorage('db_products', JSON.stringify(newProducts));
+
+    fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newProducts)
+    }).catch(err => console.error("Failed to save products to server:", err));
+  };
+
   useEffect(() => {
     // Stripping heavy base64 product images when saving cart to avoid localStorage quota issues
     const minimizedCart = cartItems.map(item => ({
@@ -595,24 +634,10 @@ export default function App() {
       }))
     }));
     saveToLocalStorage('db_orders', JSON.stringify(minimizedOrders));
-
-    // Save to server
-    fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(minimizedOrders)
-    }).catch(err => console.error("Failed to save orders to server:", err));
   }, [orders]);
 
   useEffect(() => {
     saveToLocalStorage('db_coupons', JSON.stringify(coupons));
-    
-    // Save to server
-    fetch('/api/coupons', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(coupons)
-    }).catch(err => console.error("Failed to save coupons to server:", err));
   }, [coupons]);
 
   useEffect(() => {
@@ -621,13 +646,6 @@ export default function App() {
 
   useEffect(() => {
     saveToLocalStorage('db_products', JSON.stringify(productsList));
-
-    // Save to server
-    fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(productsList)
-    }).catch(err => console.error("Failed to save products to server:", err));
   }, [productsList]);
 
   // Scroll to the top of the page on view/page transition (safely handled)
@@ -697,34 +715,63 @@ export default function App() {
   };
 
   const handleAddCoupon = (coupon: Coupon) => {
-    setCoupons((prev) => [coupon, ...prev]);
+    setCoupons((prev) => {
+      const updated = [coupon, ...prev];
+      saveToLocalStorage('db_coupons', JSON.stringify(updated));
+      fetch('/api/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      }).catch(err => console.error("Failed to save coupons to server:", err));
+      return updated;
+    });
   };
 
   const handleDeleteCoupon = (code: string) => {
-    setCoupons((prev) => prev.filter((c) => c.code !== code));
+    setCoupons((prev) => {
+      const updated = prev.filter((c) => c.code !== code);
+      saveToLocalStorage('db_coupons', JSON.stringify(updated));
+      fetch('/api/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      }).catch(err => console.error("Failed to save coupons to server:", err));
+      return updated;
+    });
   };
 
   const handleUpdateOrderStatus = (orderId: string, status: Order['status']) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o))
-    );
+    setOrders((prev) => {
+      const updated = prev.map((o) => (o.id === orderId ? { ...o, status } : o));
+      saveOrdersList(updated);
+      return updated;
+    });
     triggerToast(`تم تحديث حالة الطلب ${orderId} إلى مرحلة جديدة.`, 'success');
   };
 
   const handleCancelOrder = (orderId: string) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status: 'cancelled' } : o))
-    );
+    setOrders((prev) => {
+      const updated = prev.map((o) => (o.id === orderId ? { ...o, status: 'cancelled' } : o));
+      saveOrdersList(updated);
+      return updated;
+    });
     triggerToast(`تم إلغاء الطلب ${orderId} بنجاح. ❌`, 'info');
   };
 
   const handleDeleteOrder = (orderId: string) => {
-    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    setOrders((prev) => {
+      const updated = prev.filter((o) => o.id !== orderId);
+      saveOrdersList(updated);
+      return updated;
+    });
     triggerToast(`تم حذف الطلب ${orderId} نهائياً. 🗑️`, 'success');
   };
 
   const handleClearAllOrders = () => {
-    setOrders([]);
+    setOrders(() => {
+      saveOrdersList([]);
+      return [];
+    });
     triggerToast(`تم حذف جميع الطلبيات السابقة بالكامل بنجاح. 🧹`, 'success');
   };
 
@@ -810,7 +857,11 @@ export default function App() {
     };
 
     // Save order in state lists (pre-pended so latest is always visible)
-    setOrders((prev) => [newOrder, ...prev]);
+    setOrders((prev) => {
+      const updated = [newOrder, ...prev];
+      saveOrdersList(updated);
+      return updated;
+    });
     setMyPlacedOrderIds((prev) => [randomId, ...prev]);
 
     triggerToast(`تـم تسجيل طلبيتك بنجاح برقم التتبع #${randomId}! تم حفظ الطلب ومتابعته في لوحة التحكم.`, 'success');
@@ -1280,7 +1331,7 @@ export default function App() {
             onAddCoupon={handleAddCoupon}
             onDeleteCoupon={handleDeleteCoupon}
             products={productsList}
-            onUpdateProducts={setProductsList}
+            onUpdateProducts={handleUpdateProducts}
             siteSettings={siteSettings}
             onUpdateSiteSettings={handleUpdateSiteSettings}
             onLogout={handleAdminLogout}

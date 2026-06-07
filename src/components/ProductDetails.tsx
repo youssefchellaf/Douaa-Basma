@@ -130,9 +130,9 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                   {/* Rating / Prep estimation */}
                   <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">
                     {product.size && (
-                      <div className="flex items-center gap-2 bg-brand-gold-soft border border-brand-gold/20 px-3 py-1.5 rounded-xl">
-                        <span className="text-xs font-bold text-brand-gold-dark">الحجم/الوزن:</span>
-                        <span className="text-sm font-black text-brand-gold-dark">{product.size}</span>
+                      <div className="flex items-center gap-2 bg-emerald-900 border border-brand-gold/30 px-3 py-1.5 rounded-xl">
+                        <span className="text-xs font-bold text-brand-gold-light">الحجم/الوزن:</span>
+                        <span className="text-sm font-black text-brand-gold-light">{product.size}</span>
                       </div>
                     )}
 

@@ -71,8 +71,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               {product.category === 'juices' ? 'عصير طبيعي' : product.category === 'desserts' ? 'تحلية أصيلة' : product.category === 'events' ? 'الأفراح و المناسبات' : 'عروض خاصة'}
             </span>
             {product.size && (
-              <div className="bg-brand-gold-soft border border-brand-gold/20 px-2.5 py-1 rounded-xl">
-                <span className="text-xs font-black text-brand-gold-dark">{product.size}</span>
+              <div className="bg-emerald-900 border border-brand-gold/30 px-2.5 py-1 rounded-xl">
+                <span className="text-xs font-black text-brand-gold-light">{product.size}</span>
               </div>
             )}
           </div>

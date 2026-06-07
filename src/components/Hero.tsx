@@ -65,7 +65,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
 
             <h2 className="text-2xl sm:text-3xl md:text-5xl font-display font-black text-royal-purple leading-tight drop-shadow-sm">
               {siteSettings?.heroTitle || "مذاق طبيعي…"}<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold-dark via-brand-gold to-brand-gold-light font-extrabold drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
+              <span className="block mt-1.5 sm:mt-2 text-transparent bg-clip-text bg-gradient-to-r from-brand-gold-dark via-brand-gold to-brand-gold-light font-extrabold drop-shadow-[0_1px_2px_rgba(0,0,0,0.1)]">
                 {siteSettings?.heroSubTitle || "بلمسة حب"}
               </span>
             </h2>

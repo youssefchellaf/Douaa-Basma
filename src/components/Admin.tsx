@@ -2074,7 +2074,7 @@ export const Admin: React.FC<AdminProps> = ({
                     <img 
                       src={siteSettings?.faviconUrl || "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd"} 
                       alt="Current Favicon" 
-                      className="w-10 h-10 object-contain rounded-lg border border-gray-100 p-1 bg-brand-cream"
+                      className="w-12 h-12 object-contain rounded-xl border border-gray-200 bg-transparent"
                       referrerPolicy="no-referrer"
                     />
                     <div className="flex-1 space-y-1.5">

@@ -72,7 +72,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </span>
             {product.size && (
               <div className="flex items-center gap-1.5">
-                <span className="text-[11px] font-bold text-gray-700">الحجم:</span>
+                <span className="text-[11px] font-bold text-gray-700">
+                  {(product.size.toLowerCase().includes('g') || product.size.toLowerCase().includes('gr')) ? 'الوزن:' : 'الحجم:'}
+                </span>
                 <div className="bg-emerald-900 border border-brand-gold/30 px-2.5 py-1 rounded-xl">
                   <span className="text-xs font-black text-brand-gold-light">{product.size}</span>
                 </div>

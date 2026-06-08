@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Mail, Phone, Instagram, Facebook, MessageCircle, MapPin, ShieldCheck, Soup, Truck, Award, Sparkles, Clock } from 'lucide-react';
+import { Mail, Phone, Instagram, Facebook, MessageCircle, MapPin, ShieldCheck, Check, Truck, Award, Sparkles, Clock } from 'lucide-react';
 
 import { SiteSettings } from '../types';
 import { WhatsAppIcon } from './WhatsAppIcon';
@@ -72,7 +72,7 @@ export const InfoPages: React.FC<InfoPagesProps> = ({ activeTab, siteSettings })
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
               <div className="p-5 rounded-2xl bg-brand-gold-soft/50 border border-brand-gold/20 flex flex-col items-center">
                 <div className="w-12 h-12 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold mb-3">
-                  <Soup className="w-6 h-6" />
+                  <Check className="w-6 h-6" />
                 </div>
                 <h3 className="font-bold text-royal-purple text-base mb-2">مكونات ممتازة</h3>
                 <p className="text-sm text-gray-600">نختار الفواكه طازجة يومياً ونستخدم حليب طري ومكسرات بأعلى جودة لضمان الطعم الفاخر.</p>

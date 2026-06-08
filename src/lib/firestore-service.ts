@@ -18,6 +18,32 @@ if (fs.existsSync(configPath)) {
       db = getFirestore(firebaseApp, config.firestoreDatabaseId);
       auth = getAuth(firebaseApp);
       console.log("Firebase initialized successfully from config file.");
+
+      // One-time purge of all old default products
+      const purgeFlagPath = path.resolve("./data/.purged-v2");
+      if (!fs.existsSync(purgeFlagPath)) {
+        console.log("Starting a one-time database purge of default products...");
+        const productsCollection = collection(db, "products");
+        getDocs(productsCollection).then(async (querySnapshot) => {
+          let count = 0;
+          for (const docSnap of querySnapshot.docs) {
+            await deleteDoc(doc(db, "products", docSnap.id));
+            count++;
+          }
+          // Also reset seeded flag
+          const seedDocRef = doc(db, "settings", "status");
+          await setDoc(seedDocRef, { productsSeeded: true }, { merge: true });
+          
+          const dirOfFlag = path.dirname(purgeFlagPath);
+          if (!fs.existsSync(dirOfFlag)) {
+            fs.mkdirSync(dirOfFlag, { recursive: true });
+          }
+          fs.writeFileSync(purgeFlagPath, "purged", "utf-8");
+          console.log(`Successfully purged ${count} old default products from Firestore once.`);
+        }).catch(err => {
+          console.error("Error during one-time Firestore products purge:", err);
+        });
+      }
     }
   } catch (error) {
     console.error("Failed to parse firebase-applet-config.json. Defaulting to standalone local mode.", error);

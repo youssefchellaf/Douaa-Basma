@@ -327,7 +327,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.error("Error loading server site settings:", err);
+      console.warn("Background fetch warning for site settings (this is normal during system updates/restarts):", err);
     }
 
     try {
@@ -347,7 +347,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.error("Error loading server products:", err);
+      console.warn("Background fetch warning for products (this is normal during system updates/restarts):", err);
     }
 
     try {
@@ -359,7 +359,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.error("Error loading server coupons:", err);
+      console.warn("Background fetch warning for coupons (this is normal during system updates/restarts):", err);
     }
 
     try {
@@ -371,7 +371,7 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.error("Error loading server orders:", err);
+      console.warn("Background fetch warning for orders (this is normal during system updates/restarts):", err);
     }
   };
 

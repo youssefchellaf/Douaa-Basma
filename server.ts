@@ -3,6 +3,16 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { fileURLToPath } from "url";
+import {
+  getSiteSettings,
+  saveSiteSettings,
+  getProducts,
+  saveProducts,
+  getCoupons,
+  saveCoupons,
+  getOrders,
+  saveOrders
+} from "./src/lib/firestore-service.ts";
 
 // ES module path resolution fallback
 let currentDir = process.cwd();
@@ -24,102 +34,89 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
-  // Ensure data folder exists
+  // Ensure data folder exists as a backup/local fallback
   const DATA_DIR = path.join(process.cwd(), "data");
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
 
-  const siteSettingsPath = path.join(DATA_DIR, "site_settings.json");
-  const productsPath = path.join(DATA_DIR, "products.json");
-  const couponsPath = path.join(DATA_DIR, "coupons.json");
-  const ordersPath = path.join(DATA_DIR, "orders.json");
-
-  // Load endpoints
-  app.get("/api/site-settings", (req, res) => {
+  // Load cloud endpoints
+  app.get("/api/site-settings", async (req, res) => {
     try {
-      if (fs.existsSync(siteSettingsPath)) {
-        const data = fs.readFileSync(siteSettingsPath, "utf-8");
-        return res.json(JSON.parse(data));
-      }
-    } catch (e) {
-      console.error("Error reading site settings:", e);
-    }
-    res.json(null);
-  });
-
-  app.post("/api/site-settings", (req, res) => {
-    try {
-      fs.writeFileSync(siteSettingsPath, JSON.stringify(req.body, null, 2), "utf-8");
-      return res.json({ success: true });
+      const settings = await getSiteSettings();
+      return res.json(settings);
     } catch (e: any) {
-      console.error("Error saving site settings:", e);
+      console.error("Error in GET /api/site-settings:", e);
       return res.status(500).json({ error: e.message });
     }
   });
 
-  app.get("/api/products", (req, res) => {
+  app.post("/api/site-settings", async (req, res) => {
     try {
-      if (fs.existsSync(productsPath)) {
-        const data = fs.readFileSync(productsPath, "utf-8");
-        return res.json(JSON.parse(data));
-      }
-    } catch (e) {
-      console.error("Error reading products:", e);
-    }
-    res.json(null);
-  });
-
-  app.post("/api/products", (req, res) => {
-    try {
-      fs.writeFileSync(productsPath, JSON.stringify(req.body, null, 2), "utf-8");
-      return res.json({ success: true });
+      const success = await saveSiteSettings(req.body);
+      return res.json({ success });
     } catch (e: any) {
-      console.error("Error saving products:", e);
+      console.error("Error in POST /api/site-settings:", e);
       return res.status(500).json({ error: e.message });
     }
   });
 
-  app.get("/api/coupons", (req, res) => {
+  app.get("/api/products", async (req, res) => {
     try {
-      if (fs.existsSync(couponsPath)) {
-        const data = fs.readFileSync(couponsPath, "utf-8");
-        return res.json(JSON.parse(data));
-      }
-    } catch (e) {
-      console.error("Error reading coupons:", e);
-    }
-    res.json(null);
-  });
-
-  app.post("/api/coupons", (req, res) => {
-    try {
-      fs.writeFileSync(couponsPath, JSON.stringify(req.body, null, 2), "utf-8");
-      return res.json({ success: true });
+      const products = await getProducts();
+      return res.json(products);
     } catch (e: any) {
-      console.error("Error saving coupons:", e);
+      console.error("Error in GET /api/products:", e);
       return res.status(500).json({ error: e.message });
     }
   });
 
-  app.get("/api/orders", (req, res) => {
+  app.post("/api/products", async (req, res) => {
     try {
-      if (fs.existsSync(ordersPath)) {
-        const data = fs.readFileSync(ordersPath, "utf-8");
-        return res.json(JSON.parse(data));
-      }
-    } catch (e) {
-      console.error("Error reading orders:", e);
+      const success = await saveProducts(req.body);
+      return res.json({ success });
+    } catch (e: any) {
+      console.error("Error in POST /api/products:", e);
+      return res.status(500).json({ error: e.message });
     }
-    res.json([]);
   });
 
-  app.post("/api/orders", (req, res) => {
+  app.get("/api/coupons", async (req, res) => {
     try {
-      fs.writeFileSync(ordersPath, JSON.stringify(req.body, null, 2), "utf-8");
-      return res.json({ success: true });
+      const coupons = await getCoupons();
+      return res.json(coupons);
     } catch (e: any) {
-      console.error("Error saving orders:", e);
+      console.error("Error in GET /api/coupons:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/coupons", async (req, res) => {
+    try {
+      const success = await saveCoupons(req.body);
+      return res.json({ success });
+    } catch (e: any) {
+      console.error("Error in POST /api/coupons:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.get("/api/orders", async (req, res) => {
+    try {
+      const orders = await getOrders();
+      return res.json(orders);
+    } catch (e: any) {
+      console.error("Error in GET /api/orders:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  app.post("/api/orders", async (req, res) => {
+    try {
+      const success = await saveOrders(req.body);
+      return res.json({ success });
+    } catch (e: any) {
+      console.error("Error in POST /api/orders:", e);
       return res.status(500).json({ error: e.message });
     }
   });

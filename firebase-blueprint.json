@@ -1,0 +1,89 @@
+{
+  "entities": {
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global dynamic configuration for the website shop details",
+      "type": "object",
+      "properties": {
+        "phoneNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "workingHours": { "type": "string" },
+        "facebookUrl": { "type": "string" },
+        "instagramUrl": { "type": "string" },
+        "whatsappNumber": { "type": "string" }
+      }
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Premium food/drink products that can be ordered",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "arabicName": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "image": { "type": "string" },
+        "category": { "type": "string" },
+        "rating": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "isAvailable": { "type": "boolean" },
+        "prepTime": { "type": "string" },
+        "ingredients": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "required": ["id", "name", "price"]
+    },
+    "Coupon": {
+      "title": "Coupon",
+      "description": "Promo codes that apply percentage discounts on checkouts",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string" },
+        "discountPercent": { "type": "number" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["code", "discountPercent", "active"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase orders submitted via Whatsapp or checkout direct info",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "deliveryArea": { "type": "string" },
+        "address": { "type": "string" },
+        "notes": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "shippingCost": { "type": "number" },
+        "total": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "appliedCoupon": { "type": "object" }
+      }
+    }
+  },
+  "firestore": {
+    "settings/site": {
+      "schema": "SiteSettings",
+      "description": "Dynamic configuration of the site info"
+    },
+    "products": {
+      "schema": "Product",
+      "description": "All available products in the store catalog"
+    },
+    "coupons": {
+      "schema": "Coupon",
+      "description": "Platform discount coupons"
+    },
+    "orders": {
+      "schema": "Order",
+      "description": "Orders made by system users"
+    }
+  }
+}

@@ -33,7 +33,64 @@ export const CATEGORIES: Category[] = [
   },
 ];
 
-export const PRODUCTS: Product[] = [];
+export const PRODUCTS: Product[] = [
+  {
+    id: 1,
+    name: "عصير أفوكادو باللوز",
+    arabicName: "عصير أفوكادو باللوز",
+    description: "مزيج فاخر يجمع بين نعومة الأفوكادو وغنى اللوز المحمص، مع لمسة كريمية من الحليب الطري لمذاق استثنائي.",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&auto=format&fit=crop&q=80",
+    category: "juices",
+    size: "400ml",
+    isFeatured: true,
+    isAvailable: true,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["فاكهة أفوكادو طازجة", "لوز محمص ومقرمش", "حليب طري وبارد"]
+  },
+  {
+    id: 2,
+    name: "عصير زعزع الملكي الفاخر",
+    arabicName: "عصير زعزع الملكي الفاخر",
+    description: "عصير زعزع الملكي الأسطوري والغني بقطع الفواكه الطازجة، الشوكولاتة الفاخرة، والمكسرات المحمصة المقرمشة لمذاق يأخذك لعالم آخر من المتعة والتألق.",
+    price: 30,
+    image: "/src/assets/images/product_zaza_1779343709922.png",
+    category: "juices",
+    size: "400ml",
+    isFeatured: true,
+    isAvailable: true,
+    prepTime: "5 - 10 دقائق",
+    ingredients: ["أفوكادو طازج ممتاز", "قطع فواكه موسمية", "مكسرات محمصة مقرمشة", "شوكولاتة نوتيلا وكيت كات غنية", "كريمة مخفوقة حلواني"]
+  },
+  {
+    id: 3,
+    name: "تحلية فلان كراميل باللوز",
+    arabicName: "تحلية فلان كراميل باللوز",
+    description: "تحلية فلان الكراميل المنزلية الأصيلة بقوامها الحريري الرائع ومذاق الكراميل الغني الممتاز، مزينة بقطع اللوز المحمص المقرمش لتقديم تجربة تليق بضيافتكم.",
+    price: 20,
+    image: "/src/assets/images/product_flan_1779343731407.png",
+    category: "desserts",
+    size: "حجم وسط عائلي",
+    isFeatured: true,
+    isAvailable: true,
+    prepTime: "10 - 15 دقيقة",
+    ingredients: ["حليب طبيعي طازج", "بيض طري طازج", "لوز بلدي محمص مقرمش", "كراميل مكثف معد منزلياً بلمسة حب"]
+  },
+  {
+    id: 4,
+    name: "عصير المانجو الطبيعي الممتاز",
+    arabicName: "عصير المانجو الطبيعي الممتاز",
+    description: "عصير مانجو استوائي طبيعي 100% منعش للغاية وغني بالفيتامينات وطعم المانجو الطبيعي الخالص بنعومة فائقة، خال تماماً من المواد الحافظة.",
+    price: 22,
+    image: "/src/assets/images/product_mango_uploaded_1779885224824.png",
+    category: "juices",
+    size: "400ml",
+    isFeatured: true,
+    isAvailable: true,
+    prepTime: "5 دقائق",
+    ingredients: ["مانجو استوائي طازج حبة حبة", "ثلج مجروش منعش", "عصير مانجو مركز طبيعي"]
+  }
+];
 
 export const TESTIMONIALS: Testimonial[] = [
   {

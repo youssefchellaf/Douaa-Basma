@@ -2010,8 +2010,8 @@ export const Admin: React.FC<AdminProps> = ({
                     heroBannerUrl: "",
                     heroBannerMobileUrl: "",
                     faviconUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
-                    heroTitle: "مذاق طبيعي…",
-                    heroSubTitle: "بلمسة فاخرة",
+                    heroTitle: "مذاق طبيعي... لا يقاوم",
+                    heroSubTitle: "جودة متالية بلمسة حب",
                     heroDescription: "نحضر لكم أفخر العصائر الطبيعية الباردة والتحليات المنزلية الأصيلة، بمكونات طازجة مختارة بعناية وبمعايير تليق بكرم الضيافة ورفاهية أهليكم",
                     promoBadgeText: "مشروع نسائي منزلي فاخر 100%",
                     storeName: "Douaa & Basma",
@@ -2200,7 +2200,7 @@ export const Admin: React.FC<AdminProps> = ({
                       required
                       value={siteSettings?.heroTitle || ''}
                       onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroTitle: e.target.value })}
-                      placeholder="مذاق طبيعي..."
+                      placeholder="مذاق طبيعي... لا يقاوم"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
                   </div>
@@ -2212,7 +2212,7 @@ export const Admin: React.FC<AdminProps> = ({
                       required
                       value={siteSettings?.heroSubTitle || ''}
                       onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroSubTitle: e.target.value })}
-                      placeholder="بلمسة فاخرة..."
+                      placeholder="جودة متالية بلمسة حب..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
                   </div>

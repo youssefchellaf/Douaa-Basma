@@ -50,8 +50,8 @@ export default function App() {
       heroBannerUrl: "", // fallback to imported/def
       heroBannerMobileUrl: "",
       faviconUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
-      heroTitle: "مذاق طبيعي…",
-      heroSubTitle: "بلمسة حب",
+      heroTitle: "مذاق طبيعي... لا يقاوم",
+      heroSubTitle: "جودة متالية بلمسة حب",
       heroDescription: "نحضر لكم أفخر وأجود العصائر الطبيعية الباردة والتحليات المنزلية الأصيلة، بمكونات طازجة مختارة بعناية وبمعايير تليق بكرم الضيافة ورفاهية أهليكم",
       promoBadgeText: "مشروع نسائي منزلي فاخر 100%",
       storeName: "Douaa & Basma",

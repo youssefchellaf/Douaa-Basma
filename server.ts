@@ -34,6 +34,9 @@ async function startServer() {
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+  // Serve static assets out of src/assets directly in both dev and prod
+  app.use("/src/assets", express.static(path.join(process.cwd(), "src/assets")));
+
   // Ensure data folder exists as a backup/local fallback
   const DATA_DIR = path.join(process.cwd(), "data");
   if (!fs.existsSync(DATA_DIR)) {

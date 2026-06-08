@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Upload, HardDrive, Link2, Eye, HelpCircle, AlertTriangle, CheckCircle2, RotateCcw } from 'lucide-react';
+import { getProxiedImageUrl } from '../utils';
 
 interface ImageSelectionWidgetProps {
   value: string;
@@ -352,7 +353,7 @@ export const ImageSelectionWidget: React.FC<ImageSelectionWidgetProps> = ({
             {value ? (
               <>
                 <img
-                  src={value}
+                  src={getProxiedImageUrl(value)}
                   alt="مستعرض"
                   className="w-full h-full object-contain p-1"
                   referrerPolicy="no-referrer"

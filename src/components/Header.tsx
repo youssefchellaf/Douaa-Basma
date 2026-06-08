@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingCart, Award, Sparkles, MapPin, Phone, Settings, Milk, Heart, MessageCircle, Menu, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { CartItem, SiteSettings } from '../types';
 import { WhatsAppIcon } from './WhatsAppIcon';
+import { getProxiedImageUrl } from '../utils';
 
 interface HeaderProps {
   currentView: string;
@@ -208,7 +209,7 @@ export const Header: React.FC<HeaderProps> = ({
           onClick={handleLogoClick}
         >
           <img 
-            src={siteSettings?.logoUrl || "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd"} 
+            src={getProxiedImageUrl(siteSettings?.logoUrl || "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd")} 
             alt="Logo" 
             className="w-32 h-32 md:w-36 md:h-36 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
             referrerPolicy="no-referrer"

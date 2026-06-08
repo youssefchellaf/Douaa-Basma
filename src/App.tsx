@@ -9,6 +9,7 @@ import {
 import { Product, CartItem, Order, Coupon, SiteSettings } from './types';
 import { PRODUCTS, CATEGORIES, TESTIMONIALS, DELIVERY_ZONES, APP_COUPONS } from './data/products';
 import { Header } from './components/Header';
+import { getProxiedImageUrl } from './utils';
 import { Hero } from './components/Hero';
 import { ProductCard } from './components/ProductCard';
 import { ProductDetails } from './components/ProductDetails';
@@ -947,7 +948,7 @@ export default function App() {
                   cartItems.map((item, idx) => (
                     <div key={`${item.product.id}-${idx}`} className="p-3 bg-brand-cream rounded-2xl border border-gray-100 flex items-center gap-3 relative">
                       <img
-                        src={item.product.image}
+                        src={getProxiedImageUrl(item.product.image)}
                         alt={item.product.arabicName}
                         referrerPolicy="no-referrer"
                         className="w-12 h-12 rounded-xl object-cover"

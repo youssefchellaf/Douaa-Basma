@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Clock, ShoppingCart, Leaf } from 'lucide-react';
 import { Product } from '../types';
+import { getProxiedImageUrl } from '../utils';
 
 interface ProductCardProps {
   product: Product;
@@ -44,7 +45,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           className="relative aspect-square w-full overflow-hidden bg-brand-purple-soft/50 cursor-pointer"
         >
           <img
-            src={product.image}
+            src={getProxiedImageUrl(product.image)}
             alt={product.arabicName}
             referrerPolicy="no-referrer"
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"

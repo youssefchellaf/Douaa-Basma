@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, Trash2, Plus, Minus, ArrowLeft, Truck, HelpCircle, Sparkles, Check, Gift, AlertCircle } from 'lucide-react';
 import { CartItem, Product, Coupon } from '../types';
 import { APP_COUPONS } from '../data/products';
+import { getProxiedImageUrl } from '../utils';
 
 interface CartProps {
   cartItems: CartItem[];
@@ -195,7 +196,7 @@ export const Cart: React.FC<CartProps> = ({
                 >
                   <div className="flex items-center gap-4 w-full sm:w-auto">
                     <img
-                      src={item.product.image}
+                      src={getProxiedImageUrl(item.product.image)}
                       alt={item.product.arabicName}
                       referrerPolicy="no-referrer"
                       className="w-16 h-16 rounded-2xl object-cover border border-gray-100"

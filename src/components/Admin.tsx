@@ -9,6 +9,7 @@ import {
 import { Order, Coupon, Product, CategoryId, SiteSettings } from '../types';
 import { WhatsAppIcon } from './WhatsAppIcon';
 import { ImageSelectionWidget } from './ImageSelectionWidget';
+import { getProxiedImageUrl } from '../utils';
 
 interface AdminProps {
   orders: Order[];
@@ -1455,7 +1456,7 @@ export const Admin: React.FC<AdminProps> = ({
                   )}
 
                   <img
-                    src={p.image}
+                    src={getProxiedImageUrl(p.image)}
                     alt={p.arabicName}
                     referrerPolicy="no-referrer"
                     className="w-16 h-16 rounded-xl object-cover border border-gray-100 shrink-0"

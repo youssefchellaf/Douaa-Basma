@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Clock, ShoppingBag, Plus, Minus, ChefHat, Sparkles, CheckCircle, HelpCircle } from 'lucide-react';
 import { Product } from '../types';
+import { getProxiedImageUrl } from '../utils';
 
 interface ProductDetailsProps {
   productId: number | null;
@@ -108,7 +109,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
               {/* Image panel */}
               <div className="md:col-span-5 aspect-square relative w-full bg-brand-purple-soft/50">
                 <img
-                  src={product.image}
+                  src={getProxiedImageUrl(product.image)}
                   alt={product.arabicName}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
@@ -277,7 +278,7 @@ export const ProductDetails: React.FC<ProductDetailsProps> = ({
                     className="bg-white p-3.5 rounded-2xl border border-gray-100 hover:border-brand-purple/20 shadow-sm cursor-pointer transition-all flex items-center gap-3 active:scale-95 group"
                   >
                     <img
-                      src={rec.image}
+                      src={getProxiedImageUrl(rec.image)}
                       alt={rec.arabicName}
                       referrerPolicy="no-referrer"
                       className="w-14 h-14 rounded-xl object-cover"

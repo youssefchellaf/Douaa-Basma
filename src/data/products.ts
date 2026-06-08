@@ -36,11 +36,11 @@ export const CATEGORIES: Category[] = [
 export const PRODUCTS: Product[] = [
   {
     id: 1,
-    name: "عصير أفوكادو باللوز",
-    arabicName: "عصير أفوكادو باللوز",
+    name: "عصير الأفوكادو باللوز",
+    arabicName: "عصير الأفوكادو باللوز",
     description: "مزيج فاخر يجمع بين نعومة الأفوكادو وغنى اللوز المحمص، مع لمسة كريمية من الحليب الطري لمذاق استثنائي.",
     price: 25,
-    image: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&auto=format&fit=crop&q=80",
+    image: "https://lh3.googleusercontent.com/d/1YGUuIfsYGpxzrJ6-TvlCAbVe1IS7r3z3",
     category: "juices",
     size: "400ml",
     isFeatured: true,

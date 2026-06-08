@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Milk, Sparkles, ChefHat, ShieldCheck, Heart, ArrowDown } from 'lucide-react';
 import { SiteSettings } from '../types';
+import { getProxiedImageUrl } from '../utils';
 
 interface HeroProps {
   onOrderNowClick: () => void;
@@ -22,7 +23,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
           {siteSettings?.heroBannerMobileUrl ? (
             <div className="relative w-full h-full md:hidden flex justify-center items-start bg-brand-cream">
               <img
-                src={siteSettings.heroBannerMobileUrl}
+                src={getProxiedImageUrl(siteSettings.heroBannerMobileUrl)}
                 alt="Douaa & Basma Mobile Banner"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover scale-100 opacity-95 brightness-[0.98] object-top blur-[1.5px]"
@@ -38,7 +39,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNowClick, onExploreStory, sit
           {siteSettings?.heroBannerUrl ? (
             <div className="relative w-full h-full hidden md:flex justify-center items-center bg-brand-cream">
               <img
-                src={siteSettings.heroBannerUrl}
+                src={getProxiedImageUrl(siteSettings.heroBannerUrl)}
                 alt="Douaa & Basma Desktop Banner"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-contain scale-100 opacity-95 brightness-[0.98] blur-[1.5px]"

@@ -20,18 +20,6 @@ import { InfoPages } from './components/InfoPages';
 import { WhatsAppIcon } from './components/WhatsAppIcon';
 
 const getProductsLookup = (): Product[] => {
-  try {
-    const saved = localStorage.getItem('db_products');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
-        const validated = parsed.filter(p => p && typeof p === 'object' && p.id);
-        if (validated.length > 0) return validated;
-      }
-    }
-  } catch (e) {
-    console.error("Error loading lookup products:", e);
-  }
   return PRODUCTS;
 };
 
@@ -57,7 +45,7 @@ export default function App() {
   // --- STATE SYSTEM ---
   const [currentView, setCurrentView] = useState<string>('home');
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(() => {
-    const defaults = {
+    return {
       logoUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
       heroBannerUrl: "", // fallback to imported/def
       heroBannerMobileUrl: "",
@@ -83,17 +71,6 @@ export default function App() {
       adminPath: "/admin",
       homePath: "/"
     };
-
-    try {
-      const saved = localStorage.getItem('db_site_settings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return { ...defaults, ...parsed };
-      }
-    } catch (e) {
-      console.error("Error loading db_site_settings:", e);
-    }
-    return defaults;
   });
 
   const handleUpdateSiteSettings = (newSettings: SiteSettings) => {
@@ -132,7 +109,6 @@ export default function App() {
     }
 
     setSiteSettings(updated);
-    saveToLocalStorage('db_site_settings', JSON.stringify(updated));
     
     // Save to server
     fetch('/api/site-settings', {
@@ -247,28 +223,7 @@ export default function App() {
   // Auto refresh interval set to 30 seconds for background silent sync (requested by user)
   const [autoRefreshInterval] = useState<number>(30);
 
-  const [productsList, setProductsList] = useState<Product[]>(() => {
-    try {
-      const saved = localStorage.getItem('db_products');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          const validated = parsed.filter(p => p && typeof p === 'object' && p.id && p.arabicName && p.price);
-          const seenIds = new Set();
-          const uniqueValidated = validated.filter(p => {
-            if (seenIds.has(p.id)) return false;
-            seenIds.add(p.id);
-            return true;
-          });
-          return uniqueValidated;
-        }
-      }
-      return PRODUCTS;
-    } catch (e) {
-      console.error("Error reading db_products from localStorage:", e);
-      return PRODUCTS;
-    }
-  });
+  const [productsList, setProductsList] = useState<Product[]>(PRODUCTS);
 
   const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(() => {
     return localStorage.getItem('db_admin_unlocked') === 'true';
@@ -369,7 +324,6 @@ export default function App() {
         const data = await res.json();
         if (data && typeof data === 'object') {
           setSiteSettings(prev => ({ ...prev, ...data }));
-          saveToLocalStorage('db_site_settings', JSON.stringify(data));
         }
       }
     } catch (err) {
@@ -382,7 +336,14 @@ export default function App() {
         const data = await res.json();
         if (Array.isArray(data)) {
           setProductsList(data);
-          saveToLocalStorage('db_products', JSON.stringify(data));
+          // Auto-align cart items to use the fresh detailed product objects (including custom images) from server
+          setCartItems(prev => prev.map(item => {
+            const fresh = data.find(p => p.id === item.product.id);
+            if (fresh) {
+              return { ...item, product: fresh };
+            }
+            return item;
+          }));
         }
       }
     } catch (err) {
@@ -395,7 +356,6 @@ export default function App() {
         const data = await res.json();
         if (Array.isArray(data)) {
           setCoupons(data);
-          saveToLocalStorage('db_coupons', JSON.stringify(data));
         }
       }
     } catch (err) {
@@ -408,7 +368,6 @@ export default function App() {
         const data = await res.json();
         if (Array.isArray(data)) {
           setOrders(data);
-          saveToLocalStorage('db_orders', JSON.stringify(data));
         }
       }
     } catch (err) {
@@ -423,6 +382,10 @@ export default function App() {
   // Perform a cleanup of external/stale localStorage keys on startup to ensure maximum quota
   useEffect(() => {
     try {
+      // Proactively clear existing legacy administration keys from the visitor's browser
+      const adminKeys = ['db_site_settings', 'db_products', 'db_coupons', 'db_orders'];
+      adminKeys.forEach(k => localStorage.removeItem(k));
+
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const k = localStorage.key(i);
@@ -456,13 +419,16 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          const lookup = getProductsLookup();
           const restored = parsed.map((item: any) => {
             if (!item || typeof item !== 'object') return null;
             let prod: Product | null = null;
-            const prodId = item.productId || (item.product && item.product.id);
-            if (prodId) {
-              prod = lookup.find(p => p.id === prodId) || PRODUCTS.find(p => p.id === prodId) || null;
+            if (item.product && item.product.id) {
+              prod = item.product;
+            } else {
+              const prodId = item.productId;
+              if (prodId) {
+                prod = PRODUCTS.find(p => p.id === prodId) || null;
+              }
             }
             if (!prod) return null;
             return {
@@ -490,70 +456,7 @@ export default function App() {
     }
   });
 
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const defaultOrders: Order[] = [];
-
-    try {
-      const saved = localStorage.getItem('db_orders');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          const lookup = getProductsLookup();
-          const restored = parsed.map((order: any) => {
-            if (!order || typeof order !== 'object' || !order.id || !Array.isArray(order.items)) return null;
-            const restoredItems = order.items.map((item: any) => {
-              if (!item || typeof item !== 'object') return null;
-              let prod: Product | null = null;
-              const prodId = item.productId || (item.product && item.product.id);
-              if (prodId) {
-                const found = lookup.find(p => p.id === prodId) || PRODUCTS.find(p => p.id === prodId);
-                if (found) {
-                  prod = {
-                    ...found,
-                    ...(item.product ? {
-                      price: item.product.price,
-                      arabicName: item.product.arabicName,
-                      name: item.product.name
-                    } : {})
-                  };
-                } else if (item.product) {
-                  prod = item.product;
-                  if (!prod.image) {
-                    prod.image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=60";
-                  }
-                }
-              }
-              if (!prod) return null;
-              return {
-                product: prod,
-                quantity: typeof item.quantity === 'number' ? item.quantity : 1
-              };
-            }).filter((item: any): item is CartItem => item !== null);
-
-            return {
-              ...order,
-              items: restoredItems
-            };
-          }).filter((order: any): order is Order => order !== null);
-
-          // Deduplicate by order ID
-          const seenOrderIds = new Set();
-          const uniqueOrders = restored.filter((order) => {
-            if (seenOrderIds.has(order.id)) {
-              return false;
-            }
-            seenOrderIds.add(order.id);
-            return true;
-          });
-          return uniqueOrders;
-        }
-      }
-    } catch (e) {
-      console.error("Error reading db_orders from localStorage:", e);
-    }
-    
-    return defaultOrders;
-  });
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const [myPlacedOrderIds, setMyPlacedOrderIds] = useState<string[]>(() => {
     try {
@@ -565,21 +468,7 @@ export default function App() {
     }
   });
 
-  const [coupons, setCoupons] = useState<Coupon[]>(() => {
-    try {
-      const saved = localStorage.getItem('db_coupons');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return parsed.filter(c => c && typeof c === 'object' && c.code && typeof c.discountPercent === 'number');
-        }
-      }
-      return APP_COUPONS;
-    } catch (e) {
-      console.error("Error reading db_coupons from localStorage:", e);
-      return APP_COUPONS;
-    }
-  });
+  const [coupons, setCoupons] = useState<Coupon[]>(APP_COUPONS);
 
   const [orderNotes, setOrderNotes] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -604,7 +493,6 @@ export default function App() {
         quantity: item.quantity
       }))
     }));
-    saveToLocalStorage('db_orders', JSON.stringify(minimizedOrders));
 
     fetch('/api/orders', {
       method: 'POST',
@@ -615,7 +503,6 @@ export default function App() {
 
   const handleUpdateProducts = (newProducts: Product[]) => {
     setProductsList(newProducts);
-    saveToLocalStorage('db_products', JSON.stringify(newProducts));
 
     fetch('/api/products', {
       method: 'POST',
@@ -628,45 +515,25 @@ export default function App() {
     // Stripping heavy base64 product images when saving cart to avoid localStorage quota issues
     const minimizedCart = cartItems.map(item => ({
       productId: item.product.id,
+      product: {
+        id: item.product.id,
+        name: item.product.name,
+        arabicName: item.product.arabicName,
+        price: item.product.price,
+        image: "", // Remove massive image data url to avoid quota issues
+        category: item.product.category,
+        size: item.product.size,
+        prepTime: item.product.prepTime,
+        ingredients: item.product.ingredients || []
+      },
       quantity: item.quantity
     }));
     saveToLocalStorage('db_cart', JSON.stringify(minimizedCart));
   }, [cartItems]);
 
   useEffect(() => {
-    // Stripping heavy base64 product images when saving orders to avoid localStorage quota issues
-    const minimizedOrders = orders.map(order => ({
-      ...order,
-      items: order.items.map(item => ({
-        productId: item.product.id,
-        product: {
-          id: item.product.id,
-          name: item.product.name,
-          arabicName: item.product.arabicName,
-          price: item.product.price,
-          image: "", // Remove massive image data url, will be resolved from lookup cache on load
-          category: item.product.category,
-          size: item.product.size,
-          prepTime: item.product.prepTime,
-          ingredients: item.product.ingredients || []
-        },
-        quantity: item.quantity
-      }))
-    }));
-    saveToLocalStorage('db_orders', JSON.stringify(minimizedOrders));
-  }, [orders]);
-
-  useEffect(() => {
-    saveToLocalStorage('db_coupons', JSON.stringify(coupons));
-  }, [coupons]);
-
-  useEffect(() => {
     saveToLocalStorage('db_my_placed_order_ids', JSON.stringify(myPlacedOrderIds));
   }, [myPlacedOrderIds]);
-
-  useEffect(() => {
-    saveToLocalStorage('db_products', JSON.stringify(productsList));
-  }, [productsList]);
 
   // Scroll to the top of the page on view/page transition (safely handled)
   useEffect(() => {
@@ -737,7 +604,6 @@ export default function App() {
   const handleAddCoupon = (coupon: Coupon) => {
     setCoupons((prev) => {
       const updated = [coupon, ...prev];
-      saveToLocalStorage('db_coupons', JSON.stringify(updated));
       fetch('/api/coupons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -750,7 +616,6 @@ export default function App() {
   const handleDeleteCoupon = (code: string) => {
     setCoupons((prev) => {
       const updated = prev.filter((c) => c.code !== code);
-      saveToLocalStorage('db_coupons', JSON.stringify(updated));
       fetch('/api/coupons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

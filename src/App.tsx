@@ -244,6 +244,9 @@ export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [showAllTestimonials, setShowAllTestimonials] = useState<boolean>(false);
 
+  // Auto refresh interval set to 30 seconds for background silent sync (requested by user)
+  const [autoRefreshInterval] = useState<number>(30);
+
   const [productsList, setProductsList] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('db_products');
@@ -358,6 +361,61 @@ export default function App() {
     }
   };
 
+  // Load dynamic settings, products, coupons and orders from the central server backend
+  const loadServerData = async () => {
+    try {
+      const res = await fetch('/api/site-settings');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          setSiteSettings(prev => ({ ...prev, ...data }));
+        }
+      }
+    } catch (err) {
+      console.error("Error loading server site settings:", err);
+    }
+
+    try {
+      const res = await fetch('/api/products');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setProductsList(data);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading server products:", err);
+    }
+
+    try {
+      const res = await fetch('/api/coupons');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setCoupons(data);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading server coupons:", err);
+    }
+
+    try {
+      const res = await fetch('/api/orders');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setOrders(data);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading server orders:", err);
+    }
+  };
+
+  const triggerSync = async () => {
+    await loadServerData();
+  };
+
   // Perform a cleanup of external/stale localStorage keys on startup to ensure maximum quota
   useEffect(() => {
     try {
@@ -375,58 +433,16 @@ export default function App() {
       console.error("Startup cache cleanup failed:", e);
     }
 
-    // Load dynamic settings, products, coupons and orders from the central server backend
-    const loadServerData = async () => {
-      try {
-        const res = await fetch('/api/site-settings');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && typeof data === 'object') {
-            setSiteSettings(prev => ({ ...prev, ...data }));
-          }
-        }
-      } catch (err) {
-        console.error("Error loading server site settings:", err);
-      }
-
-      try {
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setProductsList(data);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading server products:", err);
-      }
-
-      try {
-        const res = await fetch('/api/coupons');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setCoupons(data);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading server coupons:", err);
-      }
-
-      try {
-        const res = await fetch('/api/orders');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            setOrders(data);
-          }
-        }
-      } catch (err) {
-        console.error("Error loading server orders:", err);
-      }
-    };
-
     loadServerData();
+  }, []);
+
+  // Set up periodic sync based on the 30-second interval silently in the background
+  useEffect(() => {
+    const timer = setInterval(() => {
+      triggerSync();
+    }, 30000); // 30 seconds background sync
+    
+    return () => clearInterval(timer);
   }, []);
 
   // Local storage lists for persistence
@@ -1487,6 +1503,8 @@ export default function App() {
           <p>© {new Date().getFullYear()} {siteSettings?.footerCredits || "جميع الحقوق محفوظة لعلامة"} <span className="cursor-pointer hover:text-brand-gold duration-200 font-bold" onClick={handleFooterSecretClick}>{siteSettings?.storeName || "Douaa & Basma"}</span></p>
         </div>
       </footer>
+
+
 
 
 

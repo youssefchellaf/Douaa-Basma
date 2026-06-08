@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc, getDocs, collection } from "firebase/firestore";
+import { getFirestore, doc, getDoc, setDoc, getDocs, collection, deleteDoc } from "firebase/firestore";
 import fs from "fs";
 import path from "path";
 import { PRODUCTS, APP_COUPONS } from "../data/products.ts";
@@ -42,20 +42,7 @@ function getLocalFallback(filename: string): any {
 
 // 1. Site Settings Operations
 export async function getSiteSettings(): Promise<any> {
-  try {
-    if (db) {
-      const docRef = doc(db, "settings", "site");
-      const snapshot = await getDoc(docRef);
-      if (snapshot.exists()) {
-        return snapshot.data();
-      }
-    }
-  } catch (error) {
-    console.error("Error reading site settings from Firestore:", error);
-  }
-  
-  // Return local fallback with premium defaults matching the Moroccan project Douaa & Basma
-  return getLocalFallback("site_settings.json") || {
+  const defaultSettings = getLocalFallback("site_settings.json") || {
     logoUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
     heroBannerUrl: "",
     heroBannerMobileUrl: "",
@@ -81,6 +68,25 @@ export async function getSiteSettings(): Promise<any> {
     adminPath: "/admin",
     homePath: "/"
   };
+
+  try {
+    if (db) {
+      const docRef = doc(db, "settings", "site");
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        return snapshot.data();
+      } else {
+        console.log("Seeding site settings to newly provisioned Firestore database...");
+        await setDoc(docRef, defaultSettings);
+        return defaultSettings;
+      }
+    }
+  } catch (error) {
+    console.error("Error reading site settings from Firestore:", error);
+  }
+  
+  // Return local fallback with premium defaults matching the Moroccan project Douaa & Basma
+  return defaultSettings;
 }
 
 export async function saveSiteSettings(settings: any): Promise<boolean> {
@@ -114,6 +120,18 @@ export async function getProducts(): Promise<any[]> {
       if (list.length > 0) {
         // Sort by id
         return list.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+      } else {
+        // Seed products into newly provisioned Firestore database
+        const defaultProducts = getLocalFallback("products.json") || PRODUCTS || [];
+        if (defaultProducts.length > 0) {
+          console.log("Seeding default products to Firestore database...");
+          for (const product of defaultProducts) {
+            if (!product || !product.id) continue;
+            const docRef = doc(db, "products", String(product.id));
+            await setDoc(docRef, product);
+          }
+        }
+        return defaultProducts;
       }
     }
   } catch (error) {
@@ -132,7 +150,25 @@ export async function getProducts(): Promise<any[]> {
 export async function saveProducts(products: any[]): Promise<boolean> {
   try {
     if (db) {
-      // Overwriting the collection. In Firestore, we set each item by its ID.
+      // 1. Fetch current document IDs from the "products" collection in Firestore
+      const querySnapshot = await getDocs(collection(db, "products"));
+      const existingIds = new Set<string>();
+      querySnapshot.forEach((doc) => {
+        existingIds.add(doc.id);
+      });
+
+      // 2. Determine active IDs in the updated list
+      const activeIds = new Set(products.map(p => String(p.id)));
+
+      // 3. Delete any documents that are no longer present in the updated list
+      for (const id of existingIds) {
+        if (!activeIds.has(id)) {
+          const docRef = doc(db, "products", id);
+          await deleteDoc(docRef);
+        }
+      }
+
+      // 4. Update or recreate the active products
       for (const product of products) {
         if (!product || !product.id) continue;
         const docRef = doc(db, "products", String(product.id));
@@ -162,6 +198,18 @@ export async function getCoupons(): Promise<any[]> {
       });
       if (list.length > 0) {
         return list;
+      } else {
+        // Seed default coupons to database
+        const defaultCoupons = getLocalFallback("coupons.json") || APP_COUPONS || [];
+        if (defaultCoupons.length > 0) {
+          console.log("Seeding default coupons to Firestore database...");
+          for (const coupon of defaultCoupons) {
+            if (!coupon || !coupon.code) continue;
+            const docRef = doc(db, "coupons", String(coupon.code).toUpperCase().trim());
+            await setDoc(docRef, coupon);
+          }
+        }
+        return defaultCoupons;
       }
     }
   } catch (error) {
@@ -174,6 +222,25 @@ export async function getCoupons(): Promise<any[]> {
 export async function saveCoupons(coupons: any[]): Promise<boolean> {
   try {
     if (db) {
+      // 1. Fetch current coupon codes from Firestore
+      const querySnapshot = await getDocs(collection(db, "coupons"));
+      const existingCodes = new Set<string>();
+      querySnapshot.forEach((doc) => {
+        existingCodes.add(doc.id);
+      });
+
+      // 2. Determine active coupon codes in updated list
+      const activeCodes = new Set(coupons.map(c => String(c.code).toUpperCase().trim()));
+
+      // 3. Delete any coupons no longer present in the updated list
+      for (const code of existingCodes) {
+        if (!activeCodes.has(code)) {
+          const docRef = doc(db, "coupons", code);
+          await deleteDoc(docRef);
+        }
+      }
+
+      // 4. Update or recreate the active coupons
       for (const coupon of coupons) {
         if (!coupon || !coupon.code) continue;
         const docRef = doc(db, "coupons", String(coupon.code).toUpperCase().trim());

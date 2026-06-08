@@ -1,4 +1,5 @@
 import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc, getDocs, collection, deleteDoc } from "firebase/firestore";
 import fs from "fs";
 import path from "path";
@@ -7,6 +8,7 @@ import { PRODUCTS, APP_COUPONS } from "../data/products.ts";
 // Load configuration gracefully
 const configPath = path.resolve("./firebase-applet-config.json");
 let db: any = null;
+let auth: any = null;
 
 if (fs.existsSync(configPath)) {
   try {
@@ -14,6 +16,7 @@ if (fs.existsSync(configPath)) {
     if (config && config.apiKey) {
       const firebaseApp = initializeApp(config);
       db = getFirestore(firebaseApp, config.firestoreDatabaseId);
+      auth = getAuth(firebaseApp);
       console.log("Firebase initialized successfully from config file.");
     }
   } catch (error) {
@@ -23,7 +26,54 @@ if (fs.existsSync(configPath)) {
   console.log("firebase-applet-config.json not found. Operating in local storage mode.");
 }
 
-export { db };
+export { db, auth };
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth?.currentUser?.uid || null,
+      email: auth?.currentUser?.email || null,
+      emailVerified: auth?.currentUser?.emailVerified || null,
+      isAnonymous: auth?.currentUser?.isAnonymous || null,
+      tenantId: auth?.currentUser?.tenantId || null,
+      providerInfo: auth?.currentUser?.providerData?.map((provider: any) => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  }
+  console.error("Firestore Error: ", JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 // Core default paths
 const DATA_DIR = path.resolve("./data");
@@ -72,12 +122,23 @@ export async function getSiteSettings(): Promise<any> {
   try {
     if (db) {
       const docRef = doc(db, "settings", "site");
-      const snapshot = await getDoc(docRef);
+      let snapshot;
+      try {
+        snapshot = await getDoc(docRef);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "settings/site");
+        throw err;
+      }
       if (snapshot.exists()) {
         return snapshot.data();
       } else {
         console.log("Seeding site settings to newly provisioned Firestore database...");
-        await setDoc(docRef, defaultSettings);
+        try {
+          await setDoc(docRef, defaultSettings);
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, "settings/site");
+          throw err;
+        }
         return defaultSettings;
       }
     }
@@ -93,7 +154,12 @@ export async function saveSiteSettings(settings: any): Promise<boolean> {
   try {
     if (db) {
       const docRef = doc(db, "settings", "site");
-      await setDoc(docRef, settings);
+      try {
+        await setDoc(docRef, settings);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, "settings/site");
+        throw err;
+      }
       return true;
     }
   } catch (error) {
@@ -112,15 +178,33 @@ export async function saveSiteSettings(settings: any): Promise<boolean> {
 export async function getProducts(): Promise<any[]> {
   try {
     if (db) {
-      const querySnapshot = await getDocs(collection(db, "products"));
+      // Check seeded flag
+      const seedDocRef = doc(db, "settings", "status");
+      let seedSnapshot;
+      try {
+        seedSnapshot = await getDoc(seedDocRef);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "settings/status");
+        throw err;
+      }
+      const isSeeded = seedSnapshot.exists() && seedSnapshot.data()?.productsSeeded;
+
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(collection(db, "products"));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "products");
+        throw err;
+      }
       const list: any[] = [];
       querySnapshot.forEach((doc) => {
         list.push(doc.data());
       });
+
       if (list.length > 0) {
         // Sort by id
         return list.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
-      } else {
+      } else if (!isSeeded) {
         // Seed products into newly provisioned Firestore database
         const defaultProducts = getLocalFallback("products.json") || PRODUCTS || [];
         if (defaultProducts.length > 0) {
@@ -128,19 +212,33 @@ export async function getProducts(): Promise<any[]> {
           for (const product of defaultProducts) {
             if (!product || !product.id) continue;
             const docRef = doc(db, "products", String(product.id));
-            await setDoc(docRef, product);
+            try {
+              await setDoc(docRef, product);
+            } catch (err) {
+              handleFirestoreError(err, OperationType.WRITE, `products/${product.id}`);
+              throw err;
+            }
           }
         }
+        try {
+          await setDoc(seedDocRef, { productsSeeded: true }, { merge: true });
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, "settings/status");
+          throw err;
+        }
         return defaultProducts;
+      } else {
+        // Purposively empty by administrator
+        return [];
       }
     }
   } catch (error) {
     console.error("Error reading products from Firestore:", error);
   }
 
-  // Seeding check
+  // Seeding check for local file mode
   const localList = getLocalFallback("products.json");
-  if (localList && localList.length > 0) {
+  if (localList) {
     return localList;
   }
 
@@ -150,8 +248,23 @@ export async function getProducts(): Promise<any[]> {
 export async function saveProducts(products: any[]): Promise<boolean> {
   try {
     if (db) {
+      // Mark seeded status so it never auto-seeds again
+      const seedDocRef = doc(db, "settings", "status");
+      try {
+        await setDoc(seedDocRef, { productsSeeded: true }, { merge: true });
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, "settings/status");
+        throw err;
+      }
+
       // 1. Fetch current document IDs from the "products" collection in Firestore
-      const querySnapshot = await getDocs(collection(db, "products"));
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(collection(db, "products"));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "products");
+        throw err;
+      }
       const existingIds = new Set<string>();
       querySnapshot.forEach((doc) => {
         existingIds.add(doc.id);
@@ -164,7 +277,12 @@ export async function saveProducts(products: any[]): Promise<boolean> {
       for (const id of existingIds) {
         if (!activeIds.has(id)) {
           const docRef = doc(db, "products", id);
-          await deleteDoc(docRef);
+          try {
+            await deleteDoc(docRef);
+          } catch (err) {
+            handleFirestoreError(err, OperationType.DELETE, `products/${id}`);
+            throw err;
+          }
         }
       }
 
@@ -172,7 +290,12 @@ export async function saveProducts(products: any[]): Promise<boolean> {
       for (const product of products) {
         if (!product || !product.id) continue;
         const docRef = doc(db, "products", String(product.id));
-        await setDoc(docRef, product);
+        try {
+          await setDoc(docRef, product);
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, `products/${product.id}`);
+          throw err;
+        }
       }
       return true;
     }
@@ -191,14 +314,32 @@ export async function saveProducts(products: any[]): Promise<boolean> {
 export async function getCoupons(): Promise<any[]> {
   try {
     if (db) {
-      const querySnapshot = await getDocs(collection(db, "coupons"));
+      // Check seeded flag
+      const seedDocRef = doc(db, "settings", "status");
+      let seedSnapshot;
+      try {
+        seedSnapshot = await getDoc(seedDocRef);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "settings/status");
+        throw err;
+      }
+      const isSeeded = seedSnapshot.exists() && seedSnapshot.data()?.couponsSeeded;
+
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(collection(db, "coupons"));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "coupons");
+        throw err;
+      }
       const list: any[] = [];
       querySnapshot.forEach((doc) => {
         list.push(doc.data());
       });
+
       if (list.length > 0) {
         return list;
-      } else {
+      } else if (!isSeeded) {
         // Seed default coupons to database
         const defaultCoupons = getLocalFallback("coupons.json") || APP_COUPONS || [];
         if (defaultCoupons.length > 0) {
@@ -206,24 +347,58 @@ export async function getCoupons(): Promise<any[]> {
           for (const coupon of defaultCoupons) {
             if (!coupon || !coupon.code) continue;
             const docRef = doc(db, "coupons", String(coupon.code).toUpperCase().trim());
-            await setDoc(docRef, coupon);
+            try {
+              await setDoc(docRef, coupon);
+            } catch (err) {
+              handleFirestoreError(err, OperationType.WRITE, `coupons/${coupon.code}`);
+              throw err;
+            }
           }
         }
+        try {
+          await setDoc(seedDocRef, { couponsSeeded: true }, { merge: true });
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, "settings/status");
+          throw err;
+        }
         return defaultCoupons;
+      } else {
+        // Purposively empty by administrator
+        return [];
       }
     }
   } catch (error) {
     console.error("Error reading coupons from Firestore:", error);
   }
 
-  return getLocalFallback("coupons.json") || APP_COUPONS || [];
+  const localCoupons = getLocalFallback("coupons.json");
+  if (localCoupons) {
+    return localCoupons;
+  }
+
+  return APP_COUPONS || [];
 }
 
 export async function saveCoupons(coupons: any[]): Promise<boolean> {
   try {
     if (db) {
+      // Mark seeded status so it never auto-seeds again
+      const seedDocRef = doc(db, "settings", "status");
+      try {
+        await setDoc(seedDocRef, { couponsSeeded: true }, { merge: true });
+      } catch (err) {
+        handleFirestoreError(err, OperationType.WRITE, "settings/status");
+        throw err;
+      }
+
       // 1. Fetch current coupon codes from Firestore
-      const querySnapshot = await getDocs(collection(db, "coupons"));
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(collection(db, "coupons"));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "coupons");
+        throw err;
+      }
       const existingCodes = new Set<string>();
       querySnapshot.forEach((doc) => {
         existingCodes.add(doc.id);
@@ -236,7 +411,12 @@ export async function saveCoupons(coupons: any[]): Promise<boolean> {
       for (const code of existingCodes) {
         if (!activeCodes.has(code)) {
           const docRef = doc(db, "coupons", code);
-          await deleteDoc(docRef);
+          try {
+            await deleteDoc(docRef);
+          } catch (err) {
+            handleFirestoreError(err, OperationType.DELETE, `coupons/${code}`);
+            throw err;
+          }
         }
       }
 
@@ -244,7 +424,12 @@ export async function saveCoupons(coupons: any[]): Promise<boolean> {
       for (const coupon of coupons) {
         if (!coupon || !coupon.code) continue;
         const docRef = doc(db, "coupons", String(coupon.code).toUpperCase().trim());
-        await setDoc(docRef, coupon);
+        try {
+          await setDoc(docRef, coupon);
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, `coupons/${coupon.code}`);
+          throw err;
+        }
       }
       return true;
     }
@@ -263,7 +448,13 @@ export async function saveCoupons(coupons: any[]): Promise<boolean> {
 export async function getOrders(): Promise<any[]> {
   try {
     if (db) {
-      const querySnapshot = await getDocs(collection(db, "orders"));
+      let querySnapshot;
+      try {
+        querySnapshot = await getDocs(collection(db, "orders"));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.GET, "orders");
+        throw err;
+      }
       const list: any[] = [];
       querySnapshot.forEach((doc) => {
         list.push(doc.data());
@@ -286,7 +477,12 @@ export async function saveOrders(orders: any[]): Promise<boolean> {
       for (const order of orders) {
         if (!order || !order.id) continue;
         const docRef = doc(db, "orders", String(order.id));
-        await setDoc(docRef, order);
+        try {
+          await setDoc(docRef, order);
+        } catch (err) {
+          handleFirestoreError(err, OperationType.WRITE, `orders/${order.id}`);
+          throw err;
+        }
       }
       return true;
     }

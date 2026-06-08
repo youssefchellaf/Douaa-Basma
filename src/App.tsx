@@ -253,14 +253,14 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          const validated = parsed.filter(p => p && typeof p === 'object' && p.id && p.arabicName && p.price && p.image);
+          const validated = parsed.filter(p => p && typeof p === 'object' && p.id && p.arabicName && p.price);
           const seenIds = new Set();
           const uniqueValidated = validated.filter(p => {
             if (seenIds.has(p.id)) return false;
             seenIds.add(p.id);
             return true;
           });
-          if (uniqueValidated.length > 0) return uniqueValidated;
+          return uniqueValidated;
         }
       }
       return PRODUCTS;
@@ -369,6 +369,7 @@ export default function App() {
         const data = await res.json();
         if (data && typeof data === 'object') {
           setSiteSettings(prev => ({ ...prev, ...data }));
+          saveToLocalStorage('db_site_settings', JSON.stringify(data));
         }
       }
     } catch (err) {
@@ -379,8 +380,9 @@ export default function App() {
       const res = await fetch('/api/products');
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setProductsList(data);
+          saveToLocalStorage('db_products', JSON.stringify(data));
         }
       }
     } catch (err) {
@@ -391,8 +393,9 @@ export default function App() {
       const res = await fetch('/api/coupons');
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setCoupons(data);
+          saveToLocalStorage('db_coupons', JSON.stringify(data));
         }
       }
     } catch (err) {
@@ -405,6 +408,7 @@ export default function App() {
         const data = await res.json();
         if (Array.isArray(data)) {
           setOrders(data);
+          saveToLocalStorage('db_orders', JSON.stringify(data));
         }
       }
     } catch (err) {

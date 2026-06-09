@@ -19,6 +19,7 @@ import { Tracking } from './components/Tracking';
 import { Admin } from './components/Admin';
 import { InfoPages } from './components/InfoPages';
 import { WhatsAppIcon } from './components/WhatsAppIcon';
+import { ProductDetailPage } from './components/ProductDetailPage';
 
 const getProductsLookup = (): Product[] => {
   return PRODUCTS;
@@ -119,7 +120,7 @@ export default function App() {
     }).catch(err => console.error("Failed to save site settings to server:", err));
   };
 
-  const handleSetView = (view: string) => {
+  const handleSetView = (view: string, productId?: number) => {
     setCurrentView(view);
     setIsSidebarCartOpen(false);
 
@@ -129,7 +130,11 @@ export default function App() {
     else if (view === 'contact') targetPath = siteSettings.contactPath || '/contact-us';
     else if (view === 'track') targetPath = siteSettings.trackPath || '/track';
     else if (view === 'admin') targetPath = siteSettings.adminPath || '/admin';
-    else targetPath = siteSettings.homePath || '/';
+    else if (view === 'products') targetPath = '/products';
+    else if (view === 'product-detail' && productId) {
+      targetPath = `/product/${productId}`;
+      setSelectedProductId(productId);
+    } else targetPath = siteSettings.homePath || '/';
 
     // Format targetPath correctly
     if (targetPath && !targetPath.startsWith('/')) {
@@ -152,18 +157,31 @@ export default function App() {
       const path = window.location.pathname;
       const hash = window.location.hash;
 
+      // Extract raw route segment
+      const combined = hash ? hash.replace(/^#/, '') : path;
+      let clean = combined.replace(/\/+$/, '').trim().toLowerCase();
+      if (!clean.startsWith('/')) {
+        clean = '/' + clean;
+      }
+
       const checkPath = (configuredPath: string | undefined, defaultVal: string) => {
         const val = configuredPath || defaultVal;
-        
-        // Clean paths: remove # and leading/trailing slashes
         const cleanConf = val.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
-        const cleanPath = path.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
-        const cleanHash = hash.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
-
-        return cleanPath === cleanConf || cleanHash === cleanConf;
+        return clean.replace(/^\//, '') === cleanConf;
       };
 
-      if (checkPath(siteSettings.aboutPath, 'about-us')) {
+      // Check product routing first: e.g. /product/12 or #/product/12
+      const productMatch = clean.match(/^\/product\/(\d+)/);
+      if (productMatch) {
+        const pid = parseInt(productMatch[1], 10);
+        setSelectedProductId(pid);
+        setCurrentView('product-detail');
+        return;
+      }
+
+      if (clean === '/products') {
+        setCurrentView('products');
+      } else if (checkPath(siteSettings.aboutPath, 'about-us')) {
         setCurrentView('about');
       } else if (checkPath(siteSettings.deliveryPath, 'delivery')) {
         setCurrentView('delivery');
@@ -176,11 +194,8 @@ export default function App() {
         setIsAdminUnlocked(true);
         localStorage.setItem('db_admin_unlocked', 'true');
       } else {
-        const cleanPath = path.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
-        const cleanHash = hash.replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
         const cleanHome = (siteSettings.homePath || '/').replace(/^#\/?|^[/#]+/, '').replace(/\/+$/, '').trim().toLowerCase();
-
-        if (cleanPath === '' || cleanHash === '' || cleanPath === cleanHome || cleanHash === cleanHome) {
+        if (clean === '/' || clean === '/home' || clean.replace(/^\//, '') === cleanHome) {
           setCurrentView('home');
         }
       }
@@ -1038,38 +1053,110 @@ export default function App() {
             
             {/* HERO SEGMENT */}
             <Hero
-              onOrderNowClick={() => {
-                const listElem = document.getElementById('products-listing-title');
-                if (listElem) listElem.scrollIntoView({ behavior: 'smooth' });
-              }}
+              onOrderNowClick={() => handleSetView('products')}
               onExploreStory={() => handleSetView('about')}
               siteSettings={siteSettings}
             />
 
-            {/* FILTERING BAR & PRODUCTS GRID */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 font-sans">
+            {/* FEATURED HIGHLIGHTS (المنتجات الأكثر مبيعاً) */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 font-sans">
               
-              <div className="flex flex-col items-start text-right md:items-center md:text-center gap-5 mb-8" id="products-listing-title">
-                <div className="flex flex-col items-start text-right md:items-center md:text-center w-full">
-                  <div className="flex items-center gap-2 mb-1 justify-start md:justify-center w-full">
-                    <Sparkles className="text-brand-gold animate-bounce w-4.5 h-4.5" />
-                    <span className="text-sm font-semibold tracking-wider text-brand-gold uppercase block text-right md:text-center">صنع برقة وطزاجة</span>
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple text-right md:text-center">
-                    قائمة مشروباتنا وتحليّاتنا المدهشة
-                  </h2>
-                  <p className="text-gray-500 text-sm mt-1 text-right md:text-center">تصفح وجرب أفخر ما تحضره يدا دعاء وبسمة بالمنزل.</p>
+              <div className="flex flex-col items-center text-center gap-2 mb-10">
+                <div className="flex items-center gap-2 bg-brand-gold-soft border border-brand-gold/20 px-3 py-1 rounded-full">
+                  <Sparkles className="text-brand-gold w-4 h-4" />
+                  <span className="text-xs font-black text-brand-gold-dark">مختارات النخبة المميزة</span>
+                </div>
+                <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple">
+                  منتجاتنا الأكثر طلباً وشهرة للحلويات والعصائر
+                </h2>
+                <p className="text-gray-500 text-sm">نحضرها يدوياً وبعناية فائقة من مكونات طبيعية 100% لتصلك طازجة كل ومكان</p>
+              </div>
+
+              {/* Grid with 3 featured elements */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto justify-center">
+                {productsList.filter(p => p.isAvailable !== false).slice(0, 3).map((p) => (
+                  <ProductCard
+                    key={p.id}
+                    product={p}
+                    onViewDetails={(id) => handleSetView('product-detail', id)}
+                    onAddToCart={(prod, evt) => handleAddToCart(prod, evt)}
+                  />
+                ))}
+              </div>
+
+              {/* Discovery and collection CTA */}
+              <div className="text-center mt-12 mb-4">
+                <button
+                  onClick={() => handleSetView('products')}
+                  className="px-8 py-4.5 bg-gradient-to-r from-brand-purple to-royal-purple hover:scale-[1.02] active:scale-95 text-white font-black rounded-2xl text-xs transition-all shadow-lg hover:shadow-brand-purple/20 cursor-pointer inline-flex items-center gap-2.5"
+                >
+                  <span>استكشف كافة مشروباتنا وتحلياتنا اللذيذة ({productsList.length} منتجات)</span>
+                  <ArrowUpDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* WELCOME COPONS ACTION PROMOTION */}
+            <div className="max-w-5xl mx-auto px-4 py-4">
+              <div className="bg-gradient-to-br from-royal-purple to-[#3B125C] rounded-[2.5rem] p-6 md:p-8 border border-brand-gold/25 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+                <div className="absolute -top-10 -left-10 w-40 h-40 bg-brand-gold/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-purple/25 rounded-full blur-3xl pointer-events-none" />
+                
+                <div className="text-right space-y-2 relative z-10">
+                  <span className="bg-brand-gold text-royal-purple px-3 py-1 rounded-full text-[10px] font-black uppercase">خصم تجربة الافتتاح</span>
+                  <h3 className="text-xl md:text-2xl font-display font-black text-white">خصم فوري بقيمة 10% على طلبك التالي!</h3>
+                  <p className="text-purple-200 text-xs font-semibold">بمنتهى السهول، انسخ كود الخصم التالي وضعه أثناء تأكيد الطلب</p>
                 </div>
 
-                {/* Search text inputs */}
-                <div className="relative w-full max-w-md md:mx-auto">
-                  <Search className="absolute right-3.5 top-3 w-4.5 h-4.5 text-gray-400" />
+                <div className="bg-white/10 border border-white/10 px-5 py-3.5 rounded-2xl flex items-center gap-4 relative z-10 w-full md:w-auto justify-between">
+                  <div className="text-right">
+                    <span className="text-[10px] text-purple-200 block font-bold leading-none">الكود الترويجي</span>
+                    <span className="text-sm font-black text-brand-gold mt-1.5 block">WELCOME10</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText('WELCOME10');
+                      triggerToast('📋 تم نسخ كود الخصم WELCOME10 بنجاح! ضع كود السلة للاستفادة.', 'success');
+                    }}
+                    className="px-4 py-2.5 bg-brand-gold hover:bg-brand-gold-light text-royal-purple font-black rounded-xl text-xs cursor-pointer transition-all active:scale-95"
+                  >
+                    نسخ الكود
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* WHY CHOOSE US REVIEWS BRIDGES */}
+            {renderTestimonialsSection()}
+
+          </div>
+        )}
+
+        {/* VIEW 1.5: PRODUCTS CATALOG PAGE (صفحة المنتجات) */}
+        {currentView === 'products' && (
+          <div className="space-y-6 pt-4">
+            
+            {/* Title / Header */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-right font-sans">
+              <div className="flex flex-col gap-1.5 border-b border-gray-100 pb-5 mb-8">
+                <h2 className="text-2xl md:text-3xl font-display font-black text-royal-purple">كافة المنتجات والتحليات المنزلية</h2>
+                <p className="text-xs text-gray-500 font-semibold">تصفح وجرب أفخر ما تحضره يدا دعاء وبسمة بالمنزل يومياً بمكونات فاخرة وطبيعية.</p>
+              </div>
+            </div>
+
+            {/* Filter and selector tools */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 font-sans">
+              
+              {/* Search, order, and tabs */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 mb-8">
+                <div className="relative w-full max-w-md">
+                  <Search className="absolute right-3.5 top-3.5 w-4.5 h-4.5 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="ابحث عن: (زعزع، عصير الدراغون، عصير الأفوكادو، فلان فنزويلي،..."
-                    className="w-full pr-10 pl-4 py-2.5 rounded-2xl border border-gray-200 focus:border-brand-purple outline-none text-xs bg-white/70 backdrop-blur-md shadow-sm text-right md:text-center"
+                    placeholder="ابحث عن: عصير الأفوكادو، زعزع، فلان مغربي، شيك، كيك..."
+                    className="w-full pr-10 pl-4 py-3 rounded-2xl border border-gray-150 focus:border-brand-purple outline-none text-xs bg-white/80 backdrop-blur-md shadow-sm text-right"
                   />
                   {searchQuery && (
                     <button
@@ -1080,50 +1167,44 @@ export default function App() {
                     </button>
                   )}
                 </div>
-              </div>
 
-              {/* Sub selectors filters and sorters */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-royal-purple p-4 rounded-3xl border border-brand-purple/30 shadow-lg shadow-brand-purple/15">
-                
-                {/* Categories filtering tab buttons */}
-                <div className="flex flex-wrap gap-1.5">
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setActiveCategory(cat.id)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                        activeCategory === cat.id
-                          ? 'bg-brand-gold hover:bg-brand-gold-light text-royal-purple shadow-md shadow-brand-gold/20'
-                          : 'bg-white/10 hover:bg-white/20 text-purple-100 border border-white/5'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Sorting option trigger menu */}
-                <div className="flex items-center gap-2 relative bg-white/10 px-3 py-1.5 rounded-xl border border-white/5">
-                  <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold" />
-                  <span className="text-[11px] text-purple-200 font-bold">ترتيب المنتجات:</span>
+                <div className="flex items-center gap-2 bg-royal-purple/5 border border-brand-purple/10 px-4 py-2.5 rounded-2xl w-fit md:w-auto">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-brand-gold-dark" />
+                  <span className="text-[11px] text-gray-600 font-bold">ترتيب المنتجات:</span>
                   <select
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
-                    className="text-xs font-bold text-white outline-none bg-transparent cursor-pointer [&>option]:bg-royal-purple [&>option]:text-white"
+                    className="text-xs font-bold text-royal-purple outline-none bg-transparent cursor-pointer"
                   >
-                    <option value="default" className="bg-royal-purple text-white">الافتراضي (الأصوب)</option>
-                    <option value="priceAsc" className="bg-royal-purple text-white">السعر: من الأقل إلى الأكثر</option>
-                    <option value="priceDesc" className="bg-royal-purple text-white">السعر: من الأكثر إلى الأقل</option>
-                    <option value="rating" className="bg-royal-purple text-white">حسب الحجم والوزن</option>
+                    <option value="default">الافتراضي (الأصوب)</option>
+                    <option value="priceAsc">السعر: من الأقل إلى الأكثر</option>
+                    <option value="priceDesc">السعر: من الأكثر إلى الأقل</option>
+                    <option value="rating">حسب الحجم والوزن</option>
                   </select>
                 </div>
-
               </div>
 
-              {/* Products listing grid with fluid responsive metrics */}
+              {/* Categories Navigation tab block */}
+              <div className="flex flex-wrap gap-1.5 mb-8 bg-royal-purple p-3.5 rounded-3xl border border-brand-purple/20 shadow-md">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`px-4.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      activeCategory === cat.id
+                        ? 'bg-brand-gold hover:bg-brand-gold-light text-royal-purple shadow-md shadow-brand-gold/20'
+                        : 'bg-white/10 hover:bg-white/20 text-purple-100 border border-white/5'
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Products listing grid */}
               {sortedProducts.length === 0 ? (
                 <div className="text-center py-20 px-6 bg-white rounded-3xl border border-gray-100/80 shadow-sm max-w-lg mx-auto flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center mb-5 border-2 border-brand-purple/20 shadow-inner group">
+                  <div className="w-16 h-16 bg-brand-cream rounded-2xl flex items-center justify-center mb-5 border-2 border-brand-purple/20 shadow-inner">
                     <Search className="w-8 h-8 text-royal-purple" />
                   </div>
                   <h3 className="font-display font-bold text-royal-purple text-lg mb-2">لم نجد أي منتج يطابق بحثك حالياً</h3>
@@ -1139,7 +1220,7 @@ export default function App() {
                       <ProductCard
                         key={p.id}
                         product={p}
-                        onViewDetails={(id) => setSelectedProductId(id)}
+                        onViewDetails={(id) => handleSetView('product-detail', id)}
                         onAddToCart={(prod, evt) => handleAddToCart(prod, evt)}
                       />
                     ))}
@@ -1148,11 +1229,19 @@ export default function App() {
               )}
 
             </div>
-
-            {/* WHY CHOOSE US REVIEWS BRIDGES */}
-            {renderTestimonialsSection()}
-
           </div>
+        )}
+
+        {/* VIEW 1.8: STANDALONE INDIVIDUAL PRODUCT DETAlLS PAGE (تفاصيل المنتج المستقلة) */}
+        {currentView === 'product-detail' && selectedProductId && (
+          <ProductDetailPage
+            productId={selectedProductId}
+            products={productsList}
+            onAddToCartWithCustomization={handleAddToCartWithCustomization}
+            onSetView={handleSetView}
+            onBack={() => handleSetView('products')}
+            onOpenCart={() => setIsSidebarCartOpen(true)}
+          />
         )}
 
         {/* VIEW 2: ABOUT US (من نحن) */}
@@ -1239,12 +1328,14 @@ export default function App() {
       </main>
 
       {/* DETAILED OVERLAY MODAL FOR EXPANSIVE DESCRIPTIONS */}
-      <ProductDetails
-        productId={selectedProductId}
-        products={productsList}
-        onClose={() => setSelectedProductId(null)}
-        onAddToCartWithCustomization={handleAddToCartWithCustomization}
-      />
+      {selectedProductId && currentView !== 'product-detail' && (
+        <ProductDetails
+          productId={selectedProductId}
+          products={productsList}
+          onClose={() => setSelectedProductId(null)}
+          onAddToCartWithCustomization={handleAddToCartWithCustomization}
+        />
+      )}
 
       {/* FOOTER BLOCK (Always Mounted) */}
       <footer className="bg-royal-purple text-white relative overflow-hidden pt-10 pb-6 border-t border-brand-gold/30">

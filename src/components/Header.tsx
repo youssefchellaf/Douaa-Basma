@@ -59,6 +59,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const baseNavLinks = [
     { view: 'home', label: 'الرئيسية' },
+    { view: 'products', label: 'المنتجات' },
     { view: 'track', label: 'تتبع الطلب' },
     { view: 'delivery', label: 'التوصيل' },
     { view: 'about', label: 'من نحن' },
@@ -122,8 +123,11 @@ export const Header: React.FC<HeaderProps> = ({
                         let LinkIcon = Sparkles;
                         let desc = "تصفح القائمة الرئيسية للتحليات والعصائر";
                         if (link.view === 'home') {
+                          LinkIcon = Sparkles;
+                          desc = "الرئيسية والمنتجات المميزة";
+                        } else if (link.view === 'products') {
                           LinkIcon = Milk;
-                          desc = "الرئيسية وقائمة المنتجات";
+                          desc = "قائمة المنتجات والتحليات الكلية";
                         } else if (link.view === 'about') {
                           LinkIcon = Heart;
                           desc = "نشأتنا وكواليس التحضير المتقن";
@@ -144,7 +148,8 @@ export const Header: React.FC<HeaderProps> = ({
                         const isCurrent = currentView === link.view;
 
                         let hrefPath = '#/';
-                        if (link.view === 'about') hrefPath = '#' + (siteSettings.aboutPath || '/about-us');
+                        if (link.view === 'products') hrefPath = '#/products';
+                        else if (link.view === 'about') hrefPath = '#' + (siteSettings.aboutPath || '/about-us');
                         else if (link.view === 'delivery') hrefPath = '#' + (siteSettings.deliveryPath || '/delivery');
                         else if (link.view === 'contact') hrefPath = '#' + (siteSettings.contactPath || '/contact-us');
                         else if (link.view === 'track') hrefPath = '#' + (siteSettings.trackPath || '/track');

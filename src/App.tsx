@@ -221,8 +221,8 @@ export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [showAllTestimonials, setShowAllTestimonials] = useState<boolean>(false);
 
-  // Auto refresh interval set to 30 seconds for background silent sync (requested by user)
-  const [autoRefreshInterval] = useState<number>(30);
+  // Auto refresh interval set to 5 seconds for background silent sync (Shopify style)
+  const [autoRefreshInterval] = useState<number>(5);
 
   const [productsList, setProductsList] = useState<Product[]>(PRODUCTS);
 
@@ -404,13 +404,25 @@ export default function App() {
     loadServerData();
   }, []);
 
-  // Set up periodic sync based on the 30-second interval silently in the background
+  // Set up periodic background sync every 5 seconds (Shopify-style instant sync) 
+  // and sync immediately whenever the user switches back or focuses the window/tab
   useEffect(() => {
     const timer = setInterval(() => {
       triggerSync();
-    }, 30000); // 30 seconds background sync
+    }, 5000); // 5 seconds background sync
+
+    const handleFocusAndVisibility = () => {
+      loadServerData();
+    };
+
+    window.addEventListener('focus', handleFocusAndVisibility);
+    document.addEventListener('visibilitychange', handleFocusAndVisibility);
     
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', handleFocusAndVisibility);
+      document.removeEventListener('visibilitychange', handleFocusAndVisibility);
+    };
   }, []);
 
   // Local storage lists for persistence

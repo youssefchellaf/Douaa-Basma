@@ -332,10 +332,11 @@ export default function App() {
     }
   };
 
-  // Load dynamic settings, products, coupons and orders from the central server backend
+  // Load dynamic settings, products, coupons and orders from the central server backend with strict cache-busting
   const loadServerData = async () => {
+    const timestamp = Date.now();
     try {
-      const res = await fetch('/api/site-settings');
+      const res = await fetch(`/api/site-settings?t=${timestamp}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data && typeof data === 'object') {
@@ -347,7 +348,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch(`/api/products?t=${timestamp}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -367,7 +368,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch('/api/coupons');
+      const res = await fetch(`/api/coupons?t=${timestamp}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -379,7 +380,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch('/api/orders');
+      const res = await fetch(`/api/orders?t=${timestamp}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {

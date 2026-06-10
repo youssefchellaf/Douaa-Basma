@@ -75,7 +75,7 @@ export default function App() {
     };
   });
 
-  const handleUpdateSiteSettings = (newSettings: SiteSettings) => {
+  const handleUpdateSiteSettings = async (newSettings: SiteSettings) => {
     const updated = {
       ...newSettings,
       // Fallback path definitions if cleared
@@ -113,11 +113,20 @@ export default function App() {
     setSiteSettings(updated);
     
     // Save to server
-    fetch('/api/site-settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(updated)
-    }).catch(err => console.error("Failed to save site settings to server:", err));
+    try {
+      const response = await fetch('/api/site-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save settings to server');
+      }
+      return true;
+    } catch (err) {
+      console.error("Failed to save site settings to server:", err);
+      throw err;
+    }
   };
 
   const handleSetView = (view: string, productId?: number) => {
@@ -423,6 +432,11 @@ export default function App() {
   // Set up periodic background sync every 5 seconds (Shopify-style instant sync) 
   // and sync immediately whenever the user switches back or focuses the window/tab
   useEffect(() => {
+    // If the administrator is in the admin view, disable background sync to prevent discarding un-saved edits
+    if (currentView === 'admin') {
+      return;
+    }
+
     const timer = setInterval(() => {
       triggerSync();
     }, 5000); // 5 seconds background sync
@@ -439,7 +453,7 @@ export default function App() {
       window.removeEventListener('focus', handleFocusAndVisibility);
       document.removeEventListener('visibilitychange', handleFocusAndVisibility);
     };
-  }, []);
+  }, [currentView]);
 
   // Local storage lists for persistence
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Award, DollarSign, ListOrdered, Tag, CheckCircle2, RefreshCw, Sparkles, Plus, Clock, Eye,
@@ -273,6 +273,37 @@ export const Admin: React.FC<AdminProps> = ({
   onUpdateSiteSettings,
   onLogout,
 }) => {
+  // --- SITE SETTINGS LOCAL DRAFT STATE ---
+  const [localSettings, setLocalSettings] = useState<SiteSettings>(siteSettings);
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [saveSettingsSuccess, setSaveSettingsSuccess] = useState(false);
+
+  useEffect(() => {
+    if (siteSettings) {
+      setLocalSettings(prev => {
+        if (JSON.stringify(prev) === JSON.stringify(siteSettings)) return prev;
+        return siteSettings;
+      });
+    }
+  }, [siteSettings]);
+
+  const handleManualSaveSettings = async (settingsDraft: SiteSettings = localSettings) => {
+    setIsSavingSettings(true);
+    setSaveSettingsSuccess(false);
+    try {
+      await onUpdateSiteSettings(settingsDraft);
+      setSaveSettingsSuccess(true);
+      setTimeout(() => {
+        setSaveSettingsSuccess(false);
+      }, 4000);
+    } catch (e) {
+      console.error(e);
+      alert('⚠️ فشل في حفظ الإعدادات، يرجى المحاولة مرة أخرى.');
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
+
   // --- AUTHENTICATION & SECURITY STATE SYSTEM ---
   const [passcode, setPasscode] = useState('');
   const [isAuthorized, setIsAuthorized] = useState(() => {
@@ -2002,37 +2033,73 @@ export const Admin: React.FC<AdminProps> = ({
               </p>
             </div>
             
-            <button
-              onClick={() => {
-                // reset default settings to restore if they break anything
-                if (window.confirm('هل أنت متأكد من رغبتك في إعادة ضبط الهوية إلى قيمها الافتراضية الأولى؟')) {
-                  onUpdateSiteSettings({
-                    logoUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
-                    heroBannerUrl: "",
-                    heroBannerMobileUrl: "",
-                    faviconUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
-                    heroTitle: "مذاق طبيعي... لا يقاوم",
-                    heroSubTitle: "جودة متالية بلمسة حب",
-                    heroDescription: "نحضر لكم أفخر العصائر الطبيعية الباردة والتحليات المنزلية الأصيلة، بمكونات طازجة مختارة بعناية وبمعايير تليق بكرم الضيافة ورفاهية أهليكم",
-                    promoBadgeText: "مشروع نسائي منزلي فاخر 100%",
-                    storeName: "Douaa & Basma",
-                    storeDescription: "أرقى مشروع محلي مغربي لتقديم العصائر و التحليات المنزلية. و نسعى دائماً لترك بصمة من المتعة والفرح بمناسباتكم الخاصة والعامة.",
-                    aboutTitle: "من نحن - Douaa & Basma",
-                    aboutHeroText: "مرحبًا بكم في عالم النكهات الفاخرة والطبيعية 100%",
-                    aboutMainText: "Douaa & Basma هو مشروع نسائي مغربي شغوف ومتخصص في تحضير العصائر الطبيعية والتحليات المنزلية الراقية. نقدم لكم تشكيلة مختارة من المنتجات المعدة بمكونات طازجة منتقاة حبة بحبة، لنصنع تجربة فريدة تمزج بين الفخامة والأصالة المغربية.",
-                    whatsappNumber: "212705908383",
-                    whatsappMessageTemplate: "طلب جديد من متجر Douaa & Basma",
-                    instagramUrl: "https://instagram.com/douaabasma_1",
-                    facebookUrl: "https://m.facebook.com/douaabasma01/",
-                    footerCredits: "جميع الحقوق محفوظة لعلامة"
-                  });
-                  alert('🎉 تم إعادة ضبط الإعدادات إلى القيم المصممة بنجاح!');
-                }
-              }}
-              className="px-4 py-2 bg-brand-purple-soft text-brand-purple font-bold text-xs rounded-xl hover:bg-brand-purple/20 transition-all cursor-pointer whitespace-nowrap self-start md:self-center"
-            >
-              🔄 إعادة ضبط المصنع
-            </button>
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => {
+                  // reset default settings to restore if they break anything
+                  if (window.confirm('هل أنت متأكد من رغبتك في إعادة ضبط الهوية إلى قيمها الافتراضية الأولى؟')) {
+                    const defaultFactory = {
+                      logoUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
+                      heroBannerUrl: "",
+                      heroBannerMobileUrl: "",
+                      faviconUrl: "https://lh3.googleusercontent.com/d/1cYQT6KkaEIOteCG9UCK5BveNNbPulRUd",
+                      heroTitle: "مذاق طبيعي... لا يقاوم",
+                      heroSubTitle: "جودة متالية بلمسة حب",
+                      heroDescription: "نحضر لكم أفخر العصائر الطبيعية الباردة والتحليات المنزلية الأصيلة، بمكونات طازجة مختارة بعناية وبمعايير تليق بكرم الضيافة ورفاهية أهليكم",
+                      promoBadgeText: "مشروع نسائي منزلي فاخر 100%",
+                      storeName: "Douaa & Basma",
+                      storeDescription: "أرقى مشروع محلي مغربي لتقديم العصائر و التحليات المنزلية. و نسعى دائماً لترك بصمة من المتعة والفرح بمناسباتكم الخاصة العامة.",
+                      aboutTitle: "من نحن - Douaa & Basma",
+                      aboutHeroText: "مرحبًا بكم في عالم النكهات الفاخرة والطبيعية 100%",
+                      aboutMainText: "Douaa & Basma هو مشروع نسائي مغربي شغوف ومتخصص في تحضير العصائر الطبيعية والتحليات المنزلية الراقية. نقدم لكم تشكيلة مختارة من المنتجات المعدة بمكونات طازجة منتقاة حبة بحبة، لنصنع تجربة فريدة تمزج بين الفخامة والأصالة المغربية.",
+                      whatsappNumber: "212705908383",
+                      whatsappMessageTemplate: "طلب جديد من متجر Douaa & Basma",
+                      instagramUrl: "https://instagram.com/douaabasma_1",
+                      facebookUrl: "https://m.facebook.com/douaabasma01/",
+                      footerCredits: "جميع الحقوق محفوظة لعلامة",
+                      aboutPath: "/about-us",
+                      deliveryPath: "/delivery",
+                      contactPath: "/contact-us",
+                      trackPath: "/track",
+                      adminPath: "/admin",
+                      homePath: "/"
+                    };
+                    setLocalSettings(defaultFactory);
+                    handleManualSaveSettings(defaultFactory);
+                    alert('🎉 تم إعادة ضبط الإعدادات إلى القيم المصممة بنجاح!');
+                  }
+                }}
+                className="px-4 py-2 bg-brand-purple-soft text-brand-purple font-bold text-xs rounded-xl hover:bg-brand-purple/20 transition-all cursor-pointer whitespace-nowrap self-start md:self-center"
+              >
+                🔄 إعادة ضبط المصنع
+              </button>
+
+              <button
+                onClick={() => handleManualSaveSettings(localSettings)}
+                disabled={isSavingSettings}
+                className={`px-5 py-2.5 rounded-xl font-bold text-xs cursor-pointer transition-all flex items-center gap-1.5 shadow-md ${
+                  saveSettingsSuccess 
+                    ? 'bg-green-600 text-white hover:bg-green-700' 
+                    : 'bg-brand-purple text-white hover:bg-brand-purple-light animate-pulse-slow'
+                }`}
+              >
+                {isSavingSettings ? (
+                  <>
+                    <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <span>جاري الحفظ...</span>
+                  </>
+                ) : saveSettingsSuccess ? (
+                  <span>✅ تم الحفظ بنجاح!</span>
+                ) : (
+                  <>
+                    <span>💾 حفظ التغييرات</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -2050,8 +2117,8 @@ export const Admin: React.FC<AdminProps> = ({
                 <div className="space-y-2">
                   <ImageSelectionWidget
                     label="شعار الموقع الرئيسي (Logo)"
-                    value={siteSettings?.logoUrl || ''}
-                    onChange={(val) => onUpdateSiteSettings({ ...siteSettings, logoUrl: val })}
+                    value={localSettings?.logoUrl || ''}
+                    onChange={(val) => setLocalSettings({ ...localSettings, logoUrl: val })}
                     placeholder="أدخل رابط الشعار المباشر أو استخدم الخيارات أعلاه..."
                     maxDim={600}
                   />
@@ -2063,8 +2130,8 @@ export const Admin: React.FC<AdminProps> = ({
                 <div className="space-y-2">
                   <ImageSelectionWidget
                     label="أيقونة المتصفح المفضلة (Favicon)"
-                    value={siteSettings?.faviconUrl || ''}
-                    onChange={(val) => onUpdateSiteSettings({ ...siteSettings, faviconUrl: val })}
+                    value={localSettings?.faviconUrl || ''}
+                    onChange={(val) => setLocalSettings({ ...localSettings, faviconUrl: val })}
                     placeholder="أدخل رابط أيقونة favicon المباشر..."
                     maxDim={200}
                   />
@@ -2079,8 +2146,8 @@ export const Admin: React.FC<AdminProps> = ({
                   <div className="space-y-2 border border-gray-100 rounded-2xl p-3 bg-neutral-50/50">
                     <ImageSelectionWidget
                       label="🖥️ صورة بانر للكمبيوتر (Desktop Banner)"
-                      value={siteSettings?.heroBannerUrl || ''}
-                      onChange={(val) => onUpdateSiteSettings({ ...siteSettings, heroBannerUrl: val })}
+                      value={localSettings?.heroBannerUrl || ''}
+                      onChange={(val) => setLocalSettings({ ...localSettings, heroBannerUrl: val })}
                       placeholder="أدخل رابط بانر الكمبيوتر المباشر..."
                       maxDim={1200}
                     />
@@ -2090,8 +2157,8 @@ export const Admin: React.FC<AdminProps> = ({
                   <div className="space-y-2 border border-gray-100 rounded-2xl p-3 bg-neutral-50/50">
                     <ImageSelectionWidget
                       label="📱 صورة بانر للهاتف (Mobile Banner)"
-                      value={siteSettings?.heroBannerMobileUrl || ''}
-                      onChange={(val) => onUpdateSiteSettings({ ...siteSettings, heroBannerMobileUrl: val })}
+                      value={localSettings?.heroBannerMobileUrl || ''}
+                      onChange={(val) => setLocalSettings({ ...localSettings, heroBannerMobileUrl: val })}
                       placeholder="أدخل رابط بانر الهاتف المباشر..."
                       maxDim={1000}
                     />
@@ -2113,8 +2180,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.whatsappNumber || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, whatsappNumber: e.target.value })}
+                      value={localSettings?.whatsappNumber || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, whatsappNumber: e.target.value })}
                       placeholder="مثال: 212705908383"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2126,8 +2193,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.whatsappMessageTemplate || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, whatsappMessageTemplate: e.target.value })}
+                      value={localSettings?.whatsappMessageTemplate || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, whatsappMessageTemplate: e.target.value })}
                       placeholder="عنوان المراسلة الوصفية..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2137,8 +2204,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <label className="text-xs font-black text-gray-700 block mb-1">رابط حساب الإنستغرام (Instagram URL)</label>
                     <input 
                       type="url"
-                      value={siteSettings?.instagramUrl || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, instagramUrl: e.target.value })}
+                      value={localSettings?.instagramUrl || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, instagramUrl: e.target.value })}
                       placeholder="مثال: https://instagram.com/douaabasma_1"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2148,8 +2215,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <label className="text-xs font-black text-gray-700 block mb-1">رابط صفحة الفيسبوك (Facebook URL)</label>
                     <input 
                       type="url"
-                      value={siteSettings?.facebookUrl || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, facebookUrl: e.target.value })}
+                      value={localSettings?.facebookUrl || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, facebookUrl: e.target.value })}
                       placeholder="مثال: https://m.facebook.com/douaabasma01/"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2175,8 +2242,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.storeName || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, storeName: e.target.value })}
+                      value={localSettings?.storeName || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, storeName: e.target.value })}
                       placeholder="اسم المتجر..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2187,8 +2254,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.promoBadgeText || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, promoBadgeText: e.target.value })}
+                      value={localSettings?.promoBadgeText || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, promoBadgeText: e.target.value })}
                       placeholder="عبارة التميز..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2199,8 +2266,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.heroTitle || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroTitle: e.target.value })}
+                      value={localSettings?.heroTitle || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, heroTitle: e.target.value })}
                       placeholder="مذاق طبيعي... لا يقاوم"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2211,8 +2278,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.heroSubTitle || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroSubTitle: e.target.value })}
+                      value={localSettings?.heroSubTitle || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, heroSubTitle: e.target.value })}
                       placeholder="جودة متالية بلمسة حب..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2223,8 +2290,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <textarea 
                       rows={3}
                       required
-                      value={siteSettings?.heroDescription || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, heroDescription: e.target.value })}
+                      value={localSettings?.heroDescription || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, heroDescription: e.target.value })}
                       placeholder="تفاصيل الوصف للمشروبات والتحليات..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple resize-none"
                     />
@@ -2235,8 +2302,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <textarea 
                       rows={3}
                       required
-                      value={siteSettings?.storeDescription || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, storeDescription: e.target.value })}
+                      value={localSettings?.storeDescription || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, storeDescription: e.target.value })}
                       placeholder="وصف الفوتر والنبذة القصيرة..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple resize-none"
                     />
@@ -2247,8 +2314,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.footerCredits || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, footerCredits: e.target.value })}
+                      value={localSettings?.footerCredits || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, footerCredits: e.target.value })}
                       placeholder="مثال: جميع الحقوق محفوظة لعلامة"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2269,8 +2336,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.aboutTitle || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, aboutTitle: e.target.value })}
+                      value={localSettings?.aboutTitle || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, aboutTitle: e.target.value })}
                       placeholder="عنوان صفحة من نحن..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2281,8 +2348,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.aboutHeroText || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, aboutHeroText: e.target.value })}
+                      value={localSettings?.aboutHeroText || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, aboutHeroText: e.target.value })}
                       placeholder="مرحبًا بكم في..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2293,8 +2360,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <textarea 
                       rows={5}
                       required
-                      value={siteSettings?.aboutMainText || ''}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, aboutMainText: e.target.value })}
+                      value={localSettings?.aboutMainText || ''}
+                      onChange={(e) => setLocalSettings({ ...localSettings, aboutMainText: e.target.value })}
                       placeholder="اكتب قصة المشروع هنا..."
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple"
                     />
@@ -2318,8 +2385,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.homePath || '/'}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, homePath: e.target.value })}
+                      value={localSettings?.homePath || '/'}
+                      onChange={(e) => setLocalSettings({ ...localSettings, homePath: e.target.value })}
                       placeholder="/"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2330,8 +2397,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.aboutPath || '/about-us'}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, aboutPath: e.target.value })}
+                      value={localSettings?.aboutPath || '/about-us'}
+                      onChange={(e) => setLocalSettings({ ...localSettings, aboutPath: e.target.value })}
                       placeholder="/about-us"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2342,8 +2409,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.deliveryPath || '/delivery'}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, deliveryPath: e.target.value })}
+                      value={localSettings?.deliveryPath || '/delivery'}
+                      onChange={(e) => setLocalSettings({ ...localSettings, deliveryPath: e.target.value })}
                       placeholder="/delivery"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2354,8 +2421,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.contactPath || '/contact-us'}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, contactPath: e.target.value })}
+                      value={localSettings?.contactPath || '/contact-us'}
+                      onChange={(e) => setLocalSettings({ ...localSettings, contactPath: e.target.value })}
                       placeholder="/contact-us"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2366,8 +2433,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.trackPath || '/track'}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, trackPath: e.target.value })}
+                      value={localSettings?.trackPath || '/track'}
+                      onChange={(e) => setLocalSettings({ ...localSettings, trackPath: e.target.value })}
                       placeholder="/track"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2378,8 +2445,8 @@ export const Admin: React.FC<AdminProps> = ({
                     <input 
                       type="text"
                       required
-                      value={siteSettings?.adminPath || '/admin'}
-                      onChange={(e) => onUpdateSiteSettings({ ...siteSettings, adminPath: e.target.value })}
+                      value={localSettings?.adminPath || '/admin'}
+                      onChange={(e) => setLocalSettings({ ...localSettings, adminPath: e.target.value })}
                       placeholder="/admin"
                       className="w-full text-xs font-semibold p-2.5 rounded-xl border border-gray-200 outline-none focus:border-brand-purple font-mono text-left"
                     />
@@ -2390,6 +2457,43 @@ export const Admin: React.FC<AdminProps> = ({
 
             </div>
 
+          </div>
+
+          {/* BOTTOM FLOATING SAVE BAR */}
+          <div className="bg-white/85 backdrop-blur-md border border-brand-gold/15 p-5 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-lg sticky bottom-4 z-40 mt-6">
+            <div className="text-right font-sans">
+              <span className="text-xs font-black text-royal-purple inline-flex items-center gap-1.5 direction-rtl">
+                ⚠️ تأكيد حفظ التغييرات على الهوية والبصمة والمظهر
+              </span>
+              <p className="text-[10px] text-gray-500 mt-0.5">
+                تأكد من دقة روابط الصور والمسارات والنسب المئوية ومستويات الفلان والعصائر قبل الحفظ.
+              </p>
+            </div>
+            <button
+              onClick={() => handleManualSaveSettings(localSettings)}
+              disabled={isSavingSettings}
+              className={`w-full md:w-auto px-8 py-3 rounded-xl font-black text-xs cursor-pointer transition-all flex items-center justify-center gap-2 shadow-lg ${
+                saveSettingsSuccess 
+                  ? 'bg-green-600 text-white hover:bg-green-700 hover:scale-[1.02]' 
+                  : 'bg-brand-purple text-white hover:bg-brand-purple-light hover:scale-[1.02] active:scale-95'
+              }`}
+            >
+              {isSavingSettings ? (
+                <>
+                  <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  <span>جاري حفظ البيانات بصفحة المتجر...</span>
+                </>
+              ) : saveSettingsSuccess ? (
+                <span>✅ تم الحفظ وتحديث الموقع بنجاح!</span>
+              ) : (
+                <>
+                  <span>💾 حفظ كافة التعديلات والتغييرات</span>
+                </>
+              )}
+            </button>
           </div>
 
           <div className="bg-gradient-to-r from-brand-purple/10 to-brand-gold-soft/10 p-6 rounded-3xl border border-brand-gold/15 flex flex-col md:flex-row md:items-center justify-between gap-4">
